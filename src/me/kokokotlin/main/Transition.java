@@ -43,13 +43,13 @@ public class Transition {
         return String.join("\n", reprBuilder);
     }
 
-    public List getNotSaturatedStates(String alphabet) {
+    public List<Tuple<String, Set<Character>>> getNotSaturatedStates(String alphabet) {
         Set<Character> symbolSet = Arrays.stream(alphabet.split(""))
                 .map(s -> s.charAt(0))
                 .collect(Collectors.toSet());
 
         return transitions.keySet().stream()
-                .map(key -> new Tuple(key, transitions.get(key).keySet()))
+                .map(key -> new Tuple<>(key, transitions.get(key).keySet()))
                 .filter(tuple -> !tuple.getSecond().equals(symbolSet) )
                 .collect(Collectors.toList());
     }
