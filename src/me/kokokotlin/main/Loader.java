@@ -1,11 +1,16 @@
 package me.kokokotlin.main;
 
+import me.kokokotlin.main.utils.Tuple;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Loader {
     private static boolean error = false;
@@ -158,12 +163,44 @@ public class Loader {
             Integer[] finalStates = new Integer[header.finalStates.size()];
             header.finalStates.toArray(finalStates);
 
+            if (!transition.isComplete(header.alphabet)) {
+                throw new IllegalStateException(errorForNonSaturatedStates(header.alphabet, transition.getNotSaturatedStates(header.alphabet)));
+            }
+
             return new Automaton(states_, header.startingState, finalStates, transition, header.alphabet);
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }
 
         return null;
+    }
+
+    private static String errorForNonSaturatedStates(String alphabet, List<Tuple<String, Set<Character>>> states) {
+        Set<Character> symbolSet = Arrays.stream(alphabet.split(""))
+                .map(s -> s.charAt(0))
+                .collect(Collectors.toSet());
+
+        StringBuilder message = new StringBuilder();
+        for (int i = 0; i < states.size(); i++) {
+            var tuple = states.get(i);
+
+            String key = tuple.getFirst();
+            String missingSymbols = symbolSet.stream()
+                    .filter(s -> !tuple.getSecond().contains(s))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining());
+            String verb = (missingSymbols.length() == 1) ? "is" : "are";
+
+            message.append(String.format("In state %s the transitions of { %s } %s missing!",
+                    key,
+                    String.join(", ", missingSymbols),
+                    verb
+            ));
+
+            if (i != states.size() - 1) message.append("\n");
+        }
+
+        return message.toString();
     }
 
 }

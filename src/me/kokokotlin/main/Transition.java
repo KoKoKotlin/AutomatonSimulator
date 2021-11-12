@@ -1,6 +1,9 @@
 package me.kokokotlin.main;
 
+import me.kokokotlin.main.utils.Tuple;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Transition {
     private final Map<String, Map<Character, String>> transitions = new HashMap<>();
@@ -38,5 +41,23 @@ public class Transition {
         }
 
         return String.join("\n", reprBuilder);
+    }
+
+    public List getNotSaturatedStates(String alphabet) {
+        Set<Character> symbolSet = Arrays.stream(alphabet.split(""))
+                .map(s -> s.charAt(0))
+                .collect(Collectors.toSet());
+
+        return transitions.keySet().stream()
+                .map(key -> new Tuple(key, transitions.get(key).keySet()))
+                .filter(tuple -> !tuple.getSecond().equals(symbolSet) )
+                .collect(Collectors.toList());
+    }
+
+    /*
+    * Checks if every state has one and only one transition for every symbol in the alphabet.
+    */
+    public boolean isComplete(String alphabet) {
+        return getNotSaturatedStates(alphabet).isEmpty();
     }
 }
