@@ -1,4 +1,4 @@
-package me.kokokotlin.main;
+package me.kokokotlin.main.engine;
 
 import me.kokokotlin.main.utils.Tuple;
 
@@ -6,10 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Loader {
@@ -66,7 +63,7 @@ public class Loader {
         return lineData[1];
     }
 
-    private static void parseTransition(String line, int lineCount, Transition transition, List<String> states, String alphabet) {
+    private static void parseTransition(String line, int lineCount, List<String> stateNames, List<State> states, String alphabet) {
         String[] transitionData = line.split(" ");
 
         if (transitionData.length != 4) {
@@ -81,24 +78,24 @@ public class Loader {
             return;
         }
 
-        String startState = transitionData[1];
+        String startStateName = transitionData[1];
         if (transitionData[3].length() != 1) {
             System.err.printf("Error while parsing line %d! Second argument has to be character! Got %s.\n", lineCount, transitionData[3]);
             error = true;
             return;
         }
         Character symbol = transitionData[3].charAt(0);
-        String finalState = transitionData[2];
+        String finalStateName = transitionData[2];
 
 
-        if (!states.contains(startState)) {
-            System.err.printf("Error while parsing line %d! Starting state %s not defined!", lineCount, startState);
+        if (!stateNames.contains(startStateName)) {
+            System.err.printf("Error while parsing line %d! Starting state %s not defined!", lineCount, startStateName);
             error = true;
             return;
         }
 
-        if (!states.contains(finalState)) {
-            System.err.printf("Error while parsing line %d! Final state %s not defined!", lineCount, finalState);
+        if (!stateNames.contains(finalStateName)) {
+            System.err.printf("Error while parsing line %d! Final state %s not defined!", lineCount, finalStateName);
             error = true;
             return;
         }
@@ -109,7 +106,17 @@ public class Loader {
             return;
         }
 
-        transition.addTransition(startState, symbol, finalState);
+        Optional<State> startState = states.stream().filter(state -> state.getName().equals(startStateName)).findFirst();
+        Optional<State> finalState = states.stream().filter(state -> state.getName().equals(finalStateName)).findFirst();
+
+        if (startState.isEmpty() || finalState.isEmpty())
+            throw new IllegalStateException("Internal Error!");
+
+        boolean override = startState.get().addTransition(symbol, finalState.get());
+        if (override) {
+            System.err.printf("WARNING: Overriding transition from state %s with symbol (%s), new final state: %s.\n",
+                    startStateName, symbol, finalStateName);
+        }
     }
 
     public static Automaton loadFromFile(Path path) {
@@ -125,8 +132,8 @@ public class Loader {
         }
 
         Header header = new Header();
-        List<String> states = new ArrayList<>();
-        Transition transition = null;
+        List<State> states = new ArrayList<>();
+        List<String> stateNames = new ArrayList<>();
         try {
             int i = 0;
             for(String line = bReader.readLine(); line != null; line = bReader.readLine()) {
@@ -137,37 +144,39 @@ public class Loader {
 
                 // parse the states
                 if (i > 0 && (i - 1) < header.stateCount) {
-                    String state = parseState(line, i);
-                    states.add(state);
+                    String stateName = parseState(line, i);
+                    stateNames.add(stateName);
+                    states.add(new State(stateName, header.alphabet));
                 }
                 if (error) return null;
 
                 // parse the transitions
                 if (i > header.stateCount && (i - 1 - header.stateCount) < header.transitionCount) {
-                    if (transition == null) {
-                        String[] states_ = new String[states.size()];
-                        states.toArray(states_);
-                        transition = new Transition(states_);
-                    }
-
-                    parseTransition(line, i, transition, states, header.alphabet);
+                    parseTransition(line, i, stateNames, states, header.alphabet);
                 }
                 if (error) return null;
 
                 i++;
             }
 
-            String[] states_ = new String[states.size()];
+            State[] states_ = new State[states.size()];
             states.toArray(states_);
 
             Integer[] finalStates = new Integer[header.finalStates.size()];
             header.finalStates.toArray(finalStates);
 
-            if (!transition.isComplete(header.alphabet)) {
-                throw new IllegalStateException(errorForNonSaturatedStates(header.alphabet, transition.getNotSaturatedStates(header.alphabet)));
+            List<String> missing = states.stream().map(State::missingChars).collect(Collectors.toList());
+
+            if (missing.stream().anyMatch(s -> s.length() != 0)) {
+                var notSaturated = Tuple.zip(states, missing).stream()
+                        .filter(t -> t.getSecond().length() != 0)
+                        .collect(Collectors.toList());
+
+                String errorMsg = errorForNonSaturatedStates(notSaturated);
+                throw new IllegalStateException(String.format("Not all states are saturated! \n%s", errorMsg));
             }
 
-            return new Automaton(states_, header.startingState, finalStates, transition, header.alphabet);
+            return new Automaton(states_, header.startingState, finalStates, header.alphabet);
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }
@@ -175,32 +184,26 @@ public class Loader {
         return null;
     }
 
-    private static String errorForNonSaturatedStates(String alphabet, List<Tuple<String, Set<Character>>> states) {
-        Set<Character> symbolSet = Arrays.stream(alphabet.split(""))
-                .map(s -> s.charAt(0))
-                .collect(Collectors.toSet());
+    private static String errorForNonSaturatedStates(List<Tuple<State, String>> notSaturated) {
+        StringBuilder errorMsg = new StringBuilder();
+        for (int j = 0; j < notSaturated.size(); j++) {
+            var data = notSaturated.get(j);
+            String stateName = data.getFirst().getName();
+            String missingStates = String.join(", ", data.getSecond().split(""));
 
-        StringBuilder message = new StringBuilder();
-        for (int i = 0; i < states.size(); i++) {
-            var tuple = states.get(i);
+            if (data.getSecond().length() == 1)
+                errorMsg.append(String.format("-> The state %s is missing the transition for the symbol { %s }.",
+                        stateName,
+                        missingStates));
+            else
+                errorMsg.append(String.format("-> The state %s is missing transitions for the symbols { %s }.",
+                        stateName,
+                        missingStates));
 
-            String key = tuple.getFirst();
-            String missingSymbols = symbolSet.stream()
-                    .filter(s -> !tuple.getSecond().contains(s))
-                    .map(String::valueOf)
-                    .collect(Collectors.joining());
-            String verb = (missingSymbols.length() == 1) ? "is" : "are";
-
-            message.append(String.format("In state %s the transitions of { %s } %s missing!",
-                    key,
-                    String.join(", ", missingSymbols),
-                    verb
-            ));
-
-            if (i != states.size() - 1) message.append("\n");
+            if (j != notSaturated.size() - 1) errorMsg.append("\n");
         }
 
-        return message.toString();
+        return errorMsg.toString();
     }
 
 }

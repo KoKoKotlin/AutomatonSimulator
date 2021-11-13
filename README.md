@@ -9,7 +9,7 @@
 
 ### TODO:
 
-- implement a better language ⬜
-- refactor states into an own class ⬜
-- visualization and visual simulation of the automaton ⬜
-- step by step debugging ⬜
+- implement a better language ☐
+- refactor states into an own class ☑
+- visualization and visual simulation of the automaton ☐
+- step by step debugging ☐

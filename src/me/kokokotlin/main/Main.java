@@ -1,5 +1,8 @@
 package me.kokokotlin.main;
 
+import me.kokokotlin.main.engine.Automaton;
+import me.kokokotlin.main.engine.Loader;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;

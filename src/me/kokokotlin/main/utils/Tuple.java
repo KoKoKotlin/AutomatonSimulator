@@ -1,5 +1,7 @@
 package me.kokokotlin.main.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Tuple<U, V> {
@@ -17,6 +19,15 @@ public class Tuple<U, V> {
 
     public V getSecond() {
         return second;
+    }
+
+    public static <T, W> List<Tuple<T, W>> zip(List<T> c1, List<W> c2) {
+        if (c1.size() != c2.size()) throw new IllegalArgumentException("The two Collections have to have the same size!");
+        
+        List<Tuple<T, W>> res = new ArrayList<>();
+        for (int i = 0; i < c1.size(); i++) res.add(new Tuple<>(c1.get(i), c2.get(i)));
+
+        return res;
     }
 
     @Override
