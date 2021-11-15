@@ -13,3 +13,4 @@
 - refactor states into an own class ☑
 - visualization and visual simulation of the automaton ☐
 - step by step debugging ☐
+- class for DFA and NDA ☐

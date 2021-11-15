@@ -1,7 +1,8 @@
 package me.kokokotlin.main;
 
 import me.kokokotlin.main.engine.Automaton;
-import me.kokokotlin.main.engine.Loader;
+import me.kokokotlin.main.engine.DFALoader;
+import me.kokokotlin.main.engine.RegularExpressionLoader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,6 +96,9 @@ public class Main {
 
 
     public static void main(String[] args) {
+        RegularExpressionLoader.loadFromRegex("ab*a+b+.*");
+
+        /*
         handleARGS(args);
 
         if (automatonSrc == null) {
@@ -107,7 +111,7 @@ public class Main {
             return;
         }
 
-        Automaton automaton = Loader.loadFromFile(automatonSrc);
+        Automaton automaton = DFALoader.loadFromFile(automatonSrc);
         if (automaton == null) return;
 
         if (checkSrc) {
@@ -122,5 +126,6 @@ public class Main {
 
         if (interactive) interactivePrompt(automaton);
         else System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.isAccepted(word));
+         */
     }
 }

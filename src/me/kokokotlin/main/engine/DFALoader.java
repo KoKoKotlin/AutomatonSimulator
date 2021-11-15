@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Loader {
+public class DFALoader {
     private static boolean error = false;
 
     static private class Header {
