@@ -68,4 +68,20 @@ public class Automaton {
                Final states: %s
                """, alphabetRepr, stateRepr, getTransitionRepr(), initialState.getName(), finalStateRepr);
     }
+
+    public State getCurrentState() {
+        return currentState;
+    }
+
+    public State[] getStates() {
+        return states;
+    }
+
+    public State getInitialState() {
+        return initialState;
+    }
+
+    public State[] getFinalStates() {
+        return finalStates;
+    }
 }

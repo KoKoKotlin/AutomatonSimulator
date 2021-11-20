@@ -1,6 +1,8 @@
 package me.kokokotlin.main;
 
 import me.kokokotlin.main.engine.Automaton;
+import me.kokokotlin.main.engine.DFALoader;
+import me.kokokotlin.main.engine.graphviz.DotEncoder;
 import me.kokokotlin.main.engine.regex.RegularExpressionLoader;
 
 import java.nio.file.Path;
@@ -15,6 +17,7 @@ public class Main {
     private static boolean interactive = false;
     private static boolean checkSrc = false;
     private static boolean repr = false;
+    private static boolean dotFile = false;
     private static String word;
     private static Path automatonSrc;
 
@@ -29,6 +32,7 @@ public class Main {
             Command line switches:
                 -h: Display help
                 -c: Check the source for errors
+                -d: Write graph representation to dot file for graphviz
                 -i: Start program in interactive mode
                 -p: Path of the source of the automaton [required]
                 -r: Print parsed version of automaton
@@ -69,6 +73,9 @@ public class Main {
                 case "-r" -> {
                     repr = true;
                 }
+                case "-d" -> {
+                    dotFile = true;
+                }
                 default -> {
                     throw new IllegalArgumentException(String.format("Command line option %s unknown! See -h for help!", currentOption));
                 }
@@ -95,9 +102,8 @@ public class Main {
 
 
     public static void main(String[] args) {
-        RegularExpressionLoader.loadFromRegex("ab?c");
+        // RegularExpressionLoader.loadFromRegex("ab?c");
 
-        /*
         handleARGS(args);
 
         if (automatonSrc == null) {
@@ -105,13 +111,18 @@ public class Main {
             return;
         }
 
-        if (!interactive && !repr && !checkSrc && word == null) {
+        if (!interactive && !repr && !checkSrc && !dotFile && word == null) {
             System.err.println("No word provided and not in interactive mode! Exiting...");
             return;
         }
 
         Automaton automaton = DFALoader.loadFromFile(automatonSrc);
         if (automaton == null) return;
+
+        if (dotFile) {
+            DotEncoder.automatonToDotfile(automaton, Paths.get("res/automaton.dot"));
+            return;
+        }
 
         if (checkSrc) {
             System.out.printf("No syntactical errors found in \"%s\".\n", automatonSrc.toString());
@@ -125,6 +136,5 @@ public class Main {
 
         if (interactive) interactivePrompt(automaton);
         else System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.isAccepted(word));
-         */
     }
 }

@@ -24,8 +24,6 @@ public class RegularExpressionLoader {
     // Optional: ?
     private static Tuple<List<Map<String, List<Integer>>>, Boolean> loadEpsilonNFA(String regex) {
         RegexStack stack = new RegexStack(regex);
-        RegexState[] states = new RegexState[stack.getStack().size()];
-        stack.getStack().toArray(states);
 
         // starting state is implicitly defined as the first state in the list
         // final state is implicitly defined as the first state in the list
@@ -102,6 +100,6 @@ public class RegularExpressionLoader {
     }
 
     public static void loadFromRegex(String regex) {
-        loadEpsilonNFA(regex);
+        Tuple<List<Map<String, List<Integer>>>, Boolean> epsilonNFA = loadEpsilonNFA(regex);
     }
 }
