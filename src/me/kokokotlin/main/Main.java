@@ -1,8 +1,7 @@
 package me.kokokotlin.main;
 
 import me.kokokotlin.main.engine.Automaton;
-import me.kokokotlin.main.engine.DFALoader;
-import me.kokokotlin.main.engine.RegularExpressionLoader;
+import me.kokokotlin.main.engine.regex.RegularExpressionLoader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,7 +95,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        RegularExpressionLoader.loadFromRegex("ab*a+b+.*");
+        RegularExpressionLoader.loadFromRegex("ab?c");
 
         /*
         handleARGS(args);
