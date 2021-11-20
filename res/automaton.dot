@@ -1,0 +1,20 @@
+digraph {
+	rankdir=LR
+	node [shape = point]; xxxxxxxxxxxxxxxxxxxxxxxxxx
+	sg [shape=doublecircle]
+	e [shape=doublecircle]
+	xxxxxxxxxxxxxxxxxxxxxxxxxx -> e
+	node [shape = circle];
+	e -> au [label = " a"]
+	e -> Err [label = " b"]
+	Err -> Err [label = " a"]
+	Err -> Err [label = " b"]
+	ag -> au [label = " a"]
+	ag -> su [label = " b"]
+	au -> ag [label = " a"]
+	au -> sg [label = " b"]
+	sg -> Err [label = " a"]
+	sg -> su [label = " b"]
+	su -> Err [label = " a"]
+	su -> sg [label = " b"]
+}
