@@ -29,6 +29,10 @@ public class RegularExpressionLoader {
         List<List<Integer>> states = new ArrayList<>();     // symbolic states as sets to keep track of the state indices
         List<State> dfaStates = new ArrayList<>();          // actual dfa states
 
+        // keeping track of states that can actually be reached
+        // this is needed for removing the not reachable states
+        Set<Integer> reachableStates = new HashSet<>();
+
         for (int i = 0; i < nfa.getStateCount(); i++) {
             states.add(List.of(i));
             dfaStates.add(new State(String.valueOf(i), assembledAlphabet));
@@ -51,11 +55,14 @@ public class RegularExpressionLoader {
                 }
 
                 int index = states.indexOf(resultState);
+                reachableStates.add(index);
                 currentDfaState.addTransition(symbol.charAt(0), dfaStates.get(index));
             }
 
             currentStateIndex++;
         }
+
+        // TODO: remove the unreachable states
 
         // get final states
         List<Integer> finalStates = new ArrayList<>();
@@ -69,7 +76,6 @@ public class RegularExpressionLoader {
         Integer[] finalStateArray = new Integer[finalStates.size()];
         finalStates.toArray(finalStateArray);
 
-        // TODO: remove the unreachable states
 
         State[] stateArray = new State[dfaStates.size()];
         dfaStates.toArray(stateArray);
@@ -80,7 +86,7 @@ public class RegularExpressionLoader {
     }
 
     public static Automaton loadFromRegex(String regex) {
-        EpsilonNFA eNFA = new EpsilonNFA("a*b*c*");
+        EpsilonNFA eNFA = new EpsilonNFA(regex);
         NFA nfa = new NFA(eNFA);
         return constructDFA(nfa);
     }
