@@ -1,14 +1,15 @@
 package me.kokokotlin.main.engine.regex;
 
-import me.kokokotlin.main.utils.Tuple;
-
 import java.util.*;
 
 public class EpsilonNFA {
 
     // states names are implicitly defined as the indices of the list
+    // first state is the initial state and the last state is the final state
     List<Map<String, List<Integer>>> transitions = new ArrayList<>();
     boolean hasEpsilons = false;
+
+    private List<String> alphabet;
 
     public EpsilonNFA(String regex) {
         loadEpsilonNFA(regex);
@@ -69,6 +70,7 @@ public class EpsilonNFA {
 
     private void loadEpsilonNFA(String regex) {
         RegexStack stack = new RegexStack(regex);
+        alphabet = stack.getAlphabet();
 
         // starting state is implicitly defined as the first state in the list
         // final state is implicitly defined as the first state in the list
@@ -134,4 +136,7 @@ public class EpsilonNFA {
         }
     }
 
+    public List<String> getAlphabet() {
+        return alphabet;
+    }
 }

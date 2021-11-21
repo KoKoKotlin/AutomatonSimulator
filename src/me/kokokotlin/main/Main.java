@@ -19,6 +19,7 @@ public class Main {
     private static boolean repr = false;
     private static boolean dotFile = false;
     private static String word;
+    private static String regex;
     private static Path automatonSrc;
 
     private static String convertWord(String word) {
@@ -27,16 +28,21 @@ public class Main {
 
     private static void printHelp() {
         System.out.println("""
-            Automaton Interpreter by Yannik Höll (2021)
+Automaton Interpreter by Yannik Höll (2021)
 
-            Command line switches:
-                -h: Display help
-                -c: Check the source for errors
-                -d: Write graph representation to dot file for graphviz
-                -i: Start program in interactive mode
-                -p: Path of the source of the automaton [required]
-                -r: Print parsed version of automaton
-                -w: Input word for the automaton [required when no -i, -c provided]
+Command line switches:
+    -h: Display help
+    -c: Check the source for errors (only works with provided source files)
+    -d: Write graph representation to dot file for graphviz
+    -i: Start program in interactive mode
+    -p <path>: Path of the source of the automaton
+    -r: Print parsed version of automaton
+    -regex <regular expression>: Regular expression from which an automaton is build
+    -w: Input word for the automaton [required when no -i, -c, -d, -r provided]
+
+You have to provide a path to a source file or a regular expression such that an automaton can be loaded.
+If neither is provided, the program will exit without further action.
+If both are provided the program will load from file. The regex will then be not taken into account.
         """);
     }
 
@@ -76,6 +82,9 @@ public class Main {
                 case "-d" -> {
                     dotFile = true;
                 }
+                case "-regex" -> {
+                    regex = getArgumentOrError(argQueue, "Command line option -regex needs a argument <regular expression>!");
+                }
                 default -> {
                     throw new IllegalArgumentException(String.format("Command line option %s unknown! See -h for help!", currentOption));
                 }
@@ -102,11 +111,11 @@ public class Main {
 
 
     public static void main(String[] args) {
-        // RegularExpressionLoader.loadFromRegex("ab?c");
+        RegularExpressionLoader.loadFromRegex("ab?c");
 
         handleARGS(args);
 
-        if (automatonSrc == null) {
+        if (automatonSrc == null && regex == null) {
             System.err.println("No automaton source provided! Exiting...");
             return;
         }
@@ -116,7 +125,10 @@ public class Main {
             return;
         }
 
-        Automaton automaton = DFALoader.loadFromFile(automatonSrc);
+        Automaton automaton;
+        if (automatonSrc != null) automaton = DFALoader.loadFromFile(automatonSrc);
+        else automaton = RegularExpressionLoader.loadFromRegex(regex);
+
         if (automaton == null) return;
 
         if (dotFile) {
@@ -124,7 +136,7 @@ public class Main {
             return;
         }
 
-        if (checkSrc) {
+        if (checkSrc && automatonSrc != null) {
             System.out.printf("No syntactical errors found in \"%s\".\n", automatonSrc.toString());
             return;
         }

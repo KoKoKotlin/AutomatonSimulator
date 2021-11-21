@@ -9,8 +9,8 @@
 
 ### TODO:
 
-- implement a better language ☐
+- implement a better language (regex) ☑
 - refactor states into an own class ☑
-- visualization and visual simulation of the automaton ☐
+- visualization of the automaton ☑
 - step by step debugging ☐
-- class for DFA and NDA ☐
+- class for DFA and NDA ☑

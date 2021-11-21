@@ -1,20 +1,27 @@
 digraph {
 	rankdir=LR
 	node [shape = point]; xxxxxxxxxxxxxxxxxxxxxxxxxx
-	sg [shape=doublecircle]
-	e [shape=doublecircle]
-	xxxxxxxxxxxxxxxxxxxxxxxxxx -> e
+	2 [shape=doublecircle]
+	012 [shape=doublecircle]
+	12 [shape=doublecircle]
+	xxxxxxxxxxxxxxxxxxxxxxxxxx -> 012
 	node [shape = circle];
-	e -> au [label = " a"]
-	e -> Err [label = " b"]
-	Err -> Err [label = " a"]
-	Err -> Err [label = " b"]
-	ag -> au [label = " a"]
-	ag -> su [label = " b"]
-	au -> ag [label = " a"]
-	au -> sg [label = " b"]
-	sg -> Err [label = " a"]
-	sg -> su [label = " b"]
-	su -> Err [label = " a"]
-	su -> sg [label = " b"]
+	0 -> 012 [label = " a"]
+	0 -> 12 [label = " b"]
+	0 -> 2 [label = " c"]
+	1 -> ∅ [label = " a"]
+	1 -> 12 [label = " b"]
+	1 -> 2 [label = " c"]
+	2 -> ∅ [label = " a"]
+	2 -> ∅ [label = " b"]
+	2 -> 2 [label = " c"]
+	012 -> 012 [label = " a"]
+	012 -> 12 [label = " b"]
+	012 -> 2 [label = " c"]
+	12 -> ∅ [label = " a"]
+	12 -> 12 [label = " b"]
+	12 -> 2 [label = " c"]
+	∅ -> ∅ [label = " a"]
+	∅ -> ∅ [label = " b"]
+	∅ -> ∅ [label = " c"]
 }

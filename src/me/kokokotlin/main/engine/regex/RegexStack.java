@@ -1,10 +1,10 @@
 package me.kokokotlin.main.engine.regex;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.*;
 
 class RegexStack {
     private final Deque<RegexState> stack = new ArrayDeque<>();
+    private final Set<String> alphabet = new HashSet<>();
 
     public RegexStack(String regex) {
         buildStack(regex);
@@ -52,9 +52,11 @@ class RegexStack {
                 }
                 case "." -> {
                     stack.push(RegexState.wildcard());
+                    alphabet.add("\0");
                 }
                 default -> {
                     stack.push(new RegexState(symbol));
+                    alphabet.add(symbol);
                 }
             }
         }
@@ -66,5 +68,9 @@ class RegexStack {
 
     public Deque<RegexState> getStack() {
         return stack;
+    }
+
+    public List<String> getAlphabet() {
+        return alphabet.stream().toList();
     }
 }
