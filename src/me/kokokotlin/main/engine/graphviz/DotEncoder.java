@@ -15,7 +15,7 @@ public class DotEncoder {
 
         dotRepr.append("digraph {\n");
         dotRepr.append("\trankdir=LR\n");
-        dotRepr.append("\tnode [shape = point]; xxxxxxxxxxxxxxxxxxxxxxxxxx\n");
+        dotRepr.append("\txxxxxxxxxxxxxxxxxxxxxxxxxx [shape = point];\n");
 
         for (State s: automaton.getFinalStates()) {
             dotRepr.append("\t");
@@ -23,10 +23,10 @@ public class DotEncoder {
             dotRepr.append(" [shape=doublecircle]\n");
         }
 
+        dotRepr.append("\tnode [shape = circle];\n");
         dotRepr.append("\txxxxxxxxxxxxxxxxxxxxxxxxxx -> ");
         dotRepr.append(automaton.getInitialState().getName());
         dotRepr.append("\n");
-        dotRepr.append("\tnode [shape = circle];\n");
 
         for (State state: automaton.getStates()) {
             for (var entry: state.getTransition().entrySet()) {
