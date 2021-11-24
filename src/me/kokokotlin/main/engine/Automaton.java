@@ -11,7 +11,11 @@ public class Automaton {
     private final State[] finalStates;
     private final String alphabet;
 
+    // check whether each state has unique transitions
     public Automaton(State[] states, int startingState, Integer[] finalStates, String alphabet) {
+        if (!Arrays.stream(states).allMatch(State::hasUniqueTransitions))
+            throw new IllegalArgumentException("DFA needs states with unique transitions!");
+
         this.states = states;
         this.currentState = this.states[startingState];
 
@@ -31,7 +35,7 @@ public class Automaton {
 
         for (int i = 0; i < word.length(); i++) {
             char c = word.charAt(i);
-            currentState = currentState.getNextState(c);
+            currentState = currentState.getNextStates(c).get(0);
         }
 
         return Arrays.stream(finalStates).anyMatch((State s) -> s == currentState);
@@ -44,7 +48,7 @@ public class Automaton {
             State current = states[i];
             stringBuilder.append(String.format("State (%s): \n", current.getName()));
             stringBuilder.append(current.getTransition().entrySet().stream()
-                    .map(entry -> String.format("\t%c -> %s", entry.getKey(), entry.getValue().getName()))
+                    .map(entry -> String.format("\t%c -> %s", entry.getKey(), entry.getValue().get(0).getName()))
                     .collect(Collectors.joining("\n")));
 
             if (i != states.length - 1) stringBuilder.append("\n");
