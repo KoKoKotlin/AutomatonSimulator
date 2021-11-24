@@ -9,9 +9,6 @@ public class NFA {
 
     // states names are implicitly defined as the indices of the list
     // the last state is the final state
-    /*
-    private final List<Map<String, List<String>>> transitions = new ArrayList<>();
-    */
 
     private final List<State> initialStates = new ArrayList<>();
     private final List<String> alphabet;
@@ -75,5 +72,13 @@ public class NFA {
 
     public int getStateIndex(State state) {
         return states.indexOf(state);
+    }
+
+    public List<State> getFinalStates() {
+        return List.of(states.get(states.size() - 1));
+    }
+
+    public List<State> getStates() {
+        return states;
     }
 }

@@ -10,11 +10,9 @@ public class EpsilonNFA {
 
     // states names are implicitly defined as the indices of the list
     // first state is the initial state and the last state is the final state
-    private List<State> states = new ArrayList<>();
+    private final List<State> states = new ArrayList<>();
     private List<String> alphabet;
-    /*
-    List<Map<String, List<Integer>>> transitions = new ArrayList<>();
-    */
+
     boolean hasEpsilons = false;
 
 
@@ -162,5 +160,13 @@ public class EpsilonNFA {
 
     public List<State> getStates() {
         return states;
+    }
+
+    public List<State> getInitialStates() {
+        return List.of(states.get(0));
+    }
+
+    public List<State> getFinalStates() {
+        return List.of(states.get(states.size() - 1));
     }
 }

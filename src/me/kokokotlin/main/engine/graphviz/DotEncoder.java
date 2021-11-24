@@ -9,6 +9,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 public class DotEncoder {
 
@@ -16,35 +18,49 @@ public class DotEncoder {
         return String.format("__start%d__", index);
     }
 
+    private static void writeTransitions(StringBuilder sink, List<State> states) {
+        for (State state: states) {
+            for (var entry: state.getTransition().entrySet()) {
+                sink.append("\t");
+                sink.append(state.getName());
+                sink.append(" -> ");
+                sink.append(entry.getValue().get(0).getName());
+                sink.append(String.format(" [label = \" %c\"]", entry.getKey()));
+                sink.append("\n");
+            }
+        }
+    }
+
+    private static void writeInitialAndFinalStates(StringBuilder sink, List<State> initials, List<State> finals) {
+
+        for(int i = 0; i < initials.size(); i++) {
+            sink.append("\t");
+            sink.append(getStartStateName(i));
+            sink.append(" [shape = point];\n");
+        }
+
+        for (State s: finals) {
+            sink.append("\t");
+            sink.append(s.getName());
+            sink.append(" [shape=doublecircle]\n");
+        }
+
+        for(int i = 0; i < initials.size(); i++) {
+            State s = initials.get(i);
+
+            sink.append("\tnode [shape = circle];\n\t");
+            sink.append(getStartStateName(i));
+            sink.append(" -> ");
+            sink.append(s.getName());
+            sink.append("\n");
+        }
+    }
+
     private static String dfaToDot(Automaton automaton) {
         StringBuilder dfaDot = new StringBuilder();
 
-        dfaDot.append("\t");
-        dfaDot.append(getStartStateName(0));
-        dfaDot.append(" [shape = point];\n");
-
-        for (State s: automaton.getFinalStates()) {
-            dfaDot.append("\t");
-            dfaDot.append(s.getName());
-            dfaDot.append(" [shape=doublecircle]\n");
-        }
-
-        dfaDot.append("\tnode [shape = circle];\n\t");
-        dfaDot.append(getStartStateName(0));
-        dfaDot.append(" -> ");
-        dfaDot.append(automaton.getInitialState().getName());
-        dfaDot.append("\n");
-
-        for (State state: automaton.getStates()) {
-            for (var entry: state.getTransition().entrySet()) {
-                dfaDot.append("\t");
-                dfaDot.append(state.getName());
-                dfaDot.append(" -> ");
-                dfaDot.append(entry.getValue().get(0).getName());
-                dfaDot.append(String.format(" [label = \" %c\"]", entry.getKey()));
-                dfaDot.append("\n");
-            }
-        }
+        writeInitialAndFinalStates(dfaDot, List.of(automaton.getInitialState()), Arrays.asList(automaton.getFinalStates()));
+        writeTransitions(dfaDot, Arrays.asList(automaton.getStates()));
 
         return dfaDot.toString();
     }
@@ -52,8 +68,8 @@ public class DotEncoder {
     private static String toNfaDot(NFA nfa) {
         StringBuilder nfaDot = new StringBuilder();
 
-        nfa.getInitialStates();
-
+        writeInitialAndFinalStates(nfaDot, nfa.getInitialStates(), nfa.getFinalStates());
+        writeTransitions(nfaDot, nfa.getStates());
 
         return nfaDot.toString();
     }
@@ -61,7 +77,8 @@ public class DotEncoder {
     private static String toENfaDot(EpsilonNFA eNFA) {
         StringBuilder eNfaDot = new StringBuilder();
 
-
+        writeInitialAndFinalStates(eNfaDot, eNFA.getInitialStates(), eNFA.getFinalStates());
+        writeTransitions(eNfaDot, eNFA.getStates());
 
         return eNfaDot.toString();
     }
