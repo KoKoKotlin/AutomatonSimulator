@@ -44,7 +44,9 @@ public class RegularExpressionLoader {
             State currentDfaState = dfaStates.get(currentStateIndex);
 
             for (String symbol: nfa.getAlphabet()) {
-                List<Integer> resultState = nfa.makeTransition(currentState, symbol);
+                List<State> resultState_ = nfa.makeTransitionIdx(currentState, symbol);
+                List<Integer> resultState = resultState_.stream().map(nfa::getStateIndex).collect(Collectors.toList());
+
                 if (!states.contains(resultState)) {
                     states.add(resultState);
                     String stateName;

@@ -112,11 +112,7 @@ public class DFALoader {
         if (startState.isEmpty() || finalState.isEmpty())
             throw new IllegalStateException("Internal Error!");
 
-        boolean override = startState.get().addTransition(symbol, finalState.get());
-        if (override) {
-            System.err.printf("WARNING: Overriding transition from state %s with symbol (%s), new final state: %s.\n",
-                    startStateName, symbol, finalStateName);
-        }
+        startState.get().addTransition(symbol, finalState.get());
     }
 
     public static Automaton loadFromFile(Path path) {
