@@ -30,7 +30,7 @@ public class State {
     }
 
     public boolean hasUniqueTransitions() {
-        return true;
+        return transition.entrySet().stream().allMatch(entry -> entry.getValue().size() == 1);
     }
 
     public List<State> getNextStates(Character inputSymbol) { return transition.get(inputSymbol); }
