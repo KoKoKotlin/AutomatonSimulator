@@ -1,5 +1,7 @@
 package me.kokokotlin.main.engine;
 
+import me.kokokotlin.main.engine.regex.EpsilonNFA;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -8,9 +10,12 @@ public class State {
     private final Map<Character, List<State>> transition;
     private final String alphabet;
 
-    public State(String name, String alphabet) {
+    public State(String name, String alphabet, boolean needsEpsilon) {
         this.name = name;
         transition = new HashMap<>();
+
+        if (needsEpsilon)
+            transition.put(EpsilonNFA.EPSILON, new ArrayList<>());
 
         for(int i = 0; i < alphabet.length(); i++) {
             transition.put(alphabet.charAt(i), new ArrayList<>());
@@ -41,5 +46,31 @@ public class State {
 
     public Map<Character, List<State>> getTransition() {
         return transition;
+    }
+
+    private String transitionToString() {
+        return transition.entrySet().stream().map(entry -> {
+            Character c = entry.getKey();
+            List<State> val = entry.getValue();
+
+            return String.format("%c ↦ { %s }", c, val.stream().map(s -> s.name).collect(Collectors.joining(", ")));
+        }).collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public String toString() {
+        return "State{" +
+                "name='" + name + '\'' +
+                ", transition=(" + transitionToString() +
+                "), alphabet='" + alphabet + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof State)) return false;
+        State state = (State) o;
+        return Objects.equals(name, state.name) && Objects.equals(transition, state.transition) && Objects.equals(alphabet, state.alphabet);
     }
 }

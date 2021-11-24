@@ -142,7 +142,7 @@ public class DFALoader {
                 if (i > 0 && (i - 1) < header.stateCount) {
                     String stateName = parseState(line, i);
                     stateNames.add(stateName);
-                    states.add(new State(stateName, header.alphabet));
+                    states.add(new State(stateName, header.alphabet, false));
                 }
                 if (error) return null;
 

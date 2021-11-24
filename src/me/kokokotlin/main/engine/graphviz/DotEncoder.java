@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -110,6 +111,18 @@ public class DotEncoder {
         writeOut(outputPath, dotRepr);
     }
 
+    public static void automatonToPng(Automaton dfa, Path pngPath) {
+        Path tempDotPath = Paths.get("__automaton__.dot");
+        automatonToDotfile(dfa, tempDotPath);
+
+        try {
+            Runtime.getRuntime().exec(String.format("dot -Tpng %s -o %s", tempDotPath.toAbsolutePath(), pngPath.toAbsolutePath()));
+            Files.delete(tempDotPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void writeOut(Path outputPath, String stringRepr) {
         try {
             BufferedWriter bWriter = Files.newBufferedWriter(outputPath);
@@ -119,4 +132,5 @@ public class DotEncoder {
             System.err.printf("Couldn't create output dot file! %s\n", e.getMessage());
         }
     }
+
 }

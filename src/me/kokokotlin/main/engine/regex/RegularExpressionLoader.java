@@ -35,7 +35,7 @@ public class RegularExpressionLoader {
 
         for (int i = 0; i < nfa.getStateCount(); i++) {
             states.add(List.of(i));
-            dfaStates.add(new State(String.valueOf(i), assembledAlphabet));
+            dfaStates.add(new State(String.valueOf(i), assembledAlphabet, false));
         }
         int currentStateIndex = 0;
 
@@ -53,7 +53,7 @@ public class RegularExpressionLoader {
                     if (resultState.size() == 0) stateName = "∅";
                     else stateName = resultState.stream().map(String::valueOf).collect(Collectors.joining(""));
 
-                    dfaStates.add(new State(stateName, assembledAlphabet));
+                    dfaStates.add(new State(stateName, assembledAlphabet, false));
                 }
 
                 int index = states.indexOf(resultState);
@@ -82,7 +82,14 @@ public class RegularExpressionLoader {
         State[] stateArray = new State[dfaStates.size()];
         dfaStates.toArray(stateArray);
 
-        int startingStateIndex = states.indexOf(nfa.getInitialStates());
+        int startingStateIndex = -1;
+        for (int i = 0; i < states.size(); i++) {
+            var state = states.get(i);
+            if (nfa.getInitialStatesIdx().size() == state.size() && nfa.getInitialStatesIdx().containsAll(state)) {
+                startingStateIndex = i;
+                break;
+            }
+        }
 
         return new Automaton(stateArray, startingStateIndex, finalStateArray, assembledAlphabet);
     }

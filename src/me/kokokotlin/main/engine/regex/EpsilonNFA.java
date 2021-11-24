@@ -3,15 +3,16 @@ package me.kokokotlin.main.engine.regex;
 import me.kokokotlin.main.engine.State;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EpsilonNFA {
     // encoding of empty word
-    public static final Character epsilon = 0xFF;
+    public static final Character EPSILON = 0xFF;
 
-    // states names are implicitly defined as the indices of the list
-    // first state is the initial state and the last state is the final state
     private final List<State> states = new ArrayList<>();
     private List<String> alphabet;
+    private final List<State> initialStates = new ArrayList<>();
+    private final List<State> finalStates = new ArrayList<>();
 
     boolean hasEpsilons = false;
 
@@ -26,6 +27,11 @@ public class EpsilonNFA {
 
         transition.add(destStateIndex);
         nfaState.put(symbol, transition);
+    }
+
+    public List<Integer> getEpsilonClojureIdx(List<Integer> stateIndices) {
+        List<State> epCl = getEpsilonClojure(stateIndices.stream().map(states::get).collect(Collectors.toList()));
+        return epCl.stream().map(states::indexOf).collect(Collectors.toList());
     }
 
     public List<State> getEpsilonClojure(List<State> states) {
@@ -46,7 +52,7 @@ public class EpsilonNFA {
         while (!nextStates.isEmpty()) {
             State current = nextStates.poll();
 
-            List<State> reachableStates = current.getNextStates(epsilon);
+            List<State> reachableStates = current.getNextStates(EPSILON);
 
             for (State s: reachableStates) {
                 if (!epsilonCl.contains(s)) {
@@ -57,6 +63,11 @@ public class EpsilonNFA {
         }
 
         return epsilonCl;
+    }
+
+    public List<Integer> makeTransitionIdx(List<Integer> stateIndices, String symbol) {
+        List<State> transition= makeTransition(stateIndices.stream().map(states::get).collect(Collectors.toList()), symbol);
+        return transition.stream().map(states::indexOf).collect(Collectors.toList());
     }
 
     public List<State> makeTransition(List<State> states, String symbol) {
@@ -87,7 +98,7 @@ public class EpsilonNFA {
             String symbol = s.type.fromSymbol(s.symbol);
 
             // add empty transition to state itself
-            addTransition(String.valueOf(epsilon), currentNFAState, stateCount);
+            addTransition(String.valueOf(EPSILON), currentNFAState, stateCount);
 
             switch (s.frequency) {
                 case EXACTLY_ONE -> {
@@ -104,7 +115,7 @@ public class EpsilonNFA {
                     RegexState nextState = stack.getStack().peekLast();
                     if (nextState != null && nextState.frequency == SymbolFrequency.NONE_OR_MORE) {
                         // add epsilon transition to the next state
-                        addTransition(String.valueOf(epsilon), currentNFAState, ++stateCount);
+                        addTransition(String.valueOf(EPSILON), currentNFAState, ++stateCount);
                         transitions.add(currentNFAState);
 
                         currentNFAState = null;
@@ -115,7 +126,7 @@ public class EpsilonNFA {
                 case NONE_OR_ONE -> {
                     // add an epsilon transition and a constant transition to the next state
                     stateCount++;
-                    addTransition(String.valueOf(epsilon), currentNFAState, stateCount);
+                    addTransition(String.valueOf(EPSILON), currentNFAState, stateCount);
                     addTransition(symbol, currentNFAState, stateCount);
                     transitions.add(currentNFAState);
 
@@ -135,13 +146,13 @@ public class EpsilonNFA {
         // add a missing last state with no transitions if necessary
         if (transitions.size() == stateCount) {
             Map<String, List<Integer>> lastState = new HashMap<>();
-            addTransition(String.valueOf(epsilon), lastState, stateCount);
+            addTransition(String.valueOf(EPSILON), lastState, stateCount);
             transitions.add(lastState);
         }
 
         // convert the transition table to a list of states
         for (int i = 0; i < transitions.size(); i++) {
-            states.add(new State(String.valueOf(i), String.join("", alphabet)));
+            states.add(new State(String.valueOf(i), String.join("", alphabet), true));
         }
 
         for (int i = 0; i < transitions.size(); i++) {
@@ -152,6 +163,10 @@ public class EpsilonNFA {
                 for (int idx: stateIndices) currentState.addTransition(symbol.charAt(0), states.get(idx));
             }
         }
+
+        // first state is the initial state and the last state is the final state
+        initialStates.add(states.get(0));
+        finalStates.add(states.get(states.size() - 1));
     }
 
     public List<String> getAlphabet() {

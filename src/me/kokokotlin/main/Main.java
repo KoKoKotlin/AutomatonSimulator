@@ -17,10 +17,17 @@ public class Main {
     private static boolean interactive = false;
     private static boolean checkSrc = false;
     private static boolean repr = false;
+
     private static boolean dotFile = false;
+    private static Path dotPath;
+
     private static String word;
     private static String regex;
+
     private static Path automatonSrc;
+
+    private static boolean pngFile;
+    private static Path pngPath;
 
     private static String convertWord(String word) {
         return (word.length() == 0) ? "ε" : word;
@@ -33,9 +40,10 @@ Automaton Interpreter by Yannik Höll (2021)
 Command line switches:
     -h: Display help
     -c: Check the source for errors (only works with provided source files)
-    -d: Write graph representation to dot file for graphviz
+    -d <path>: Write graph representation to dot file for graphviz [default: automaton.dot]
     -i: Start program in interactive mode
-    -p <path>: Path of the source of the automaton
+    -p <path>: Path of the source of the automaton [default: automaton.png]
+    -png <path>: Save a image of the graph at the given path
     -r: Print parsed version of automaton
     -regex <regular expression>: Regular expression from which an automaton is build
     -w: Input word for the automaton [required when no -i, -c, -d, -r provided]
@@ -51,6 +59,13 @@ If both are provided the program will load from file. The regex will then be not
         if (s == null) throw new IllegalArgumentException(errorMsg);
 
         return s;
+    }
+
+    private static String tryGetArgument(Queue<String> queue) {
+        String s = queue.peek();
+        if (s == null || s.startsWith("-")) return null;
+
+        return queue.poll();
     }
 
     private static void handleARGS(String[] args) {
@@ -81,9 +96,16 @@ If both are provided the program will load from file. The regex will then be not
                 }
                 case "-d" -> {
                     dotFile = true;
+                    String maybePath = tryGetArgument(argQueue);
+                    dotPath = Paths.get((maybePath != null) ? maybePath : "automaton.dot");
                 }
                 case "-regex" -> {
                     regex = getArgumentOrError(argQueue, "Command line option -regex needs a argument <regular expression>!");
+                }
+                case "-png" -> {
+                    pngFile = true;
+                    String maybePath = tryGetArgument(argQueue);
+                    pngPath = Paths.get((maybePath != null) ? maybePath : "automaton.png");
                 }
                 default -> {
                     throw new IllegalArgumentException(String.format("Command line option %s unknown! See -h for help!", currentOption));
@@ -111,17 +133,10 @@ If both are provided the program will load from file. The regex will then be not
 
 
     public static void main(String[] args) {
-        RegularExpressionLoader.loadFromRegex("ab?c");
-
         handleARGS(args);
 
         if (automatonSrc == null && regex == null) {
             System.err.println("No automaton source provided! Exiting...");
-            return;
-        }
-
-        if (!interactive && !repr && !checkSrc && !dotFile && word == null) {
-            System.err.println("No word provided and not in interactive mode! Exiting...");
             return;
         }
 
@@ -136,6 +151,11 @@ If both are provided the program will load from file. The regex will then be not
             return;
         }
 
+        if (pngFile) {
+            DotEncoder.automatonToPng(automaton, pngPath);
+            return;
+        }
+
         if (checkSrc && automatonSrc != null) {
             System.out.printf("No syntactical errors found in \"%s\".\n", automatonSrc.toString());
             return;
@@ -146,7 +166,16 @@ If both are provided the program will load from file. The regex will then be not
             return;
         }
 
-        if (interactive) interactivePrompt(automaton);
-        else System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.isAccepted(word));
+        if (interactive) {
+            interactivePrompt(automaton);
+        } else {
+
+            if (word == null) {
+                System.err.println("No word provided and not in interactive mode! Exiting...");
+                return;
+            }
+
+            System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.isAccepted(word));
+        }
     }
 }

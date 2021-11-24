@@ -1,100 +1,26 @@
 digraph {
-Artikel Bearbeiten Verlauf Diskussion Abonnieren
-Matrix synapse
-Dieser Artikel wurde für die folgenden Ubuntu-Versionen getestet:
-Ubuntu 20.04 Focal Fossa
-
-Du möchtest den Artikel für eine weitere Ubuntu-Version testen? Mitarbeit im Wiki ist immer willkommen! Dazu sind die Hinweise zum Testen von Artikeln zu beachten.
-
-Zum Verständnis dieses Artikels sind folgende Seiten hilfreich:
-Installation von Programmen
-
-Ein Terminal öffnen
-
-mit Root-Rechten arbeiten
-
-Virtual Hosts erstellen
-
-Let-s-Encrypt Zertifkate erstellen:
-
-Inhaltsverzeichnis
-Installation
-Clients
-Benutzerverwaltung
-HTTPS
-Links
-￼Matrix Synapse 🇬🇧 ist ein dezentraler Messenger-Server, für den es für alle gängigen Plattformen Client-Programme gibt . Er unterstützt neben Ende-zu-Ende verschlüsselten Chat auch Voice-over-IP und steht unter der GPL-kompatiblen Apache-Lizenz.
-
-Nachrichten werden über die Servergrenzen hinaus nach dem einfachen Schema @Kontakt:matrix.domain.eu versendet.
-
-Installation
-Matrix Synapse kann direkt aus den Quellen installiert werden [1]
-
-matrix-synapse (universe)
-
-Befehl zum Installieren der Pakete:
-
-sudo apt-get install matrix-synapse
-Oder mit apturl installieren, Link: apt://matrix-synapse
-
-Allerdings erhält man dort nicht unbedingt die aktuelleste Version.
-
-Aktuelle Version
-Matrix Synapse betreibt ein eigene Paketquelle für die aktuellste Version. Diese fügt man wie folgend hinzu:
-
-Um aus der Fremdquelle zu installieren, muss man unabhängig von der Ubuntu-Version die folgende Paketquelle freischalten:
-
-Hinweis!
-Zusätzliche Fremdquellen können das System gefährden.
-
-deb https://matrix.org/packages/debian/
-Um die Fremdquelle zu authentifizieren, muss man den Signierungsschlüssel herunterladen ⮷ und in der Paketverwaltung hinzufügen. Alternativ dazu kann man auch im Terminal den folgenden Befehl ausführen:
-
-wget -q -O "-" https://matrix.org/packages/debian/repo-key.asc | sudo apt-key add -
-Dienst starten und stoppen
-Zum Starten:
-
-sudo service matrix-synapse start
-Und zum Stoppen:
-
-sudo service matrix-synapse stop
-Clients
-Durch die offene Matrix-API gibt es einen ganze Reihe von Matrix-Clients. Eine Übersicht ist auf der Matrix-Webseite 🇬🇧 zu finden. Der meist benutzte OpenSource-Client ist Riot 🇬🇧. Für Ubuntu Touch kann FluffyChat eingesetzt werden.
-
-Benutzerverwaltung
-Damit neue Benutzer hinzugefügt werden können, muss in der Konfigurationsdatei eine zufällig erstellte Zeichenkette hinterlegt werden.
-
-Die Zeichenkette erzeugen:
-
-cat /dev/random | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
-Diese wird in der /etc/matrix-synapse/homeserver.yaml eingetragen:
-
-registration_shared_secret: "hier die Ausgabe eintragen"
-Benutzer im Terminal anlegen
-Benutzer werden im Terminal mit folgenden Befehlt erzeugt:
-
-register_new_matrix_user -c /etc/matrix-synapse/homeserver.yaml https://127.0.0.1:8448
-Administratoren müssen über das Terminal erzeugt werden.
-
-Benutzer im Client anlegen
-Wenn im Client - wie Riot - neue Benutzer sich beim Matrix-Server registrieren können sollen, muss dies über die /etc/matrix-synapse/homeserver.yaml erlaubt werden. Dazu wird enable_registration von False auf True geändert.
 	rankdir=LR
 	__start0__ [shape = point];
-	3 [shape=doublecircle]
+	2 [shape=doublecircle]
+	120 [shape=doublecircle]
+	12 [shape=doublecircle]
 	node [shape = circle];
-	__start0__ -> 0
-	0 -> 1 [label = " a"]
-	0 -> ∅ [label = " b"]
-	0 -> ∅ [label = " c"]
+	__start0__ -> ∅
+	0 -> 120 [label = " a"]
+	0 -> 12 [label = " b"]
+	0 -> 2 [label = " c"]
 	1 -> ∅ [label = " a"]
-	1 -> 2 [label = " b"]
-	1 -> ∅ [label = " c"]
+	1 -> 12 [label = " b"]
+	1 -> 2 [label = " c"]
 	2 -> ∅ [label = " a"]
 	2 -> ∅ [label = " b"]
-	2 -> 3 [label = " c"]
-	3 -> ∅ [label = " a"]
-	3 -> ∅ [label = " b"]
-	3 -> ∅ [label = " c"]
+	2 -> 2 [label = " c"]
+	120 -> 120 [label = " a"]
+	120 -> 12 [label = " b"]
+	120 -> 2 [label = " c"]
+	12 -> ∅ [label = " a"]
+	12 -> 12 [label = " b"]
+	12 -> 2 [label = " c"]
 	∅ -> ∅ [label = " a"]
 	∅ -> ∅ [label = " b"]
 	∅ -> ∅ [label = " c"]

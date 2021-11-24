@@ -16,7 +16,7 @@ public class NFA {
 
     public NFA(EpsilonNFA eNFA) {
         alphabet = eNFA.getAlphabet();
-        for (int i = 0; i < eNFA.getStates().size(); i++) states.add(new State(String.valueOf(i), String.join("", getAlphabet())));
+        for (int i = 0; i < eNFA.getStates().size(); i++) states.add(new State(String.valueOf(i), String.join("", getAlphabet()), false));
         constructFromENFA(eNFA);
         // initialStates = eNFA.getEpsilonClojure();
     }
@@ -29,17 +29,19 @@ public class NFA {
         // this can introduce and initial states
         // the states could be a set of integers, so we need to keep track of them in a separate list
         for (int i = 0; i < eNFA.getStates().size(); i++) {
+            State currentENFAState = eNFA.getStates().get(i);
             State currentState = states.get(i);
-            List<State> currentStateSet = List.of(states.get(i));
 
             for (String symbol: eNFA.getAlphabet()) {
                 // Formula from above
-                List<State> resultingStates = eNFA.getEpsilonClojure(eNFA.makeTransition(eNFA.getEpsilonClojure(currentStateSet), symbol));
-                for (State s: resultingStates) {
-                    currentState.addTransition(symbol.charAt(0), s);
+                List<Integer> resultingStates = eNFA.getEpsilonClojureIdx(eNFA.makeTransitionIdx(eNFA.getEpsilonClojureIdx(List.of(i)), symbol));
+                for (Integer idx: resultingStates) {
+                    currentState.addTransition(symbol.charAt(0), states.get(idx));
                 }
             }
         }
+
+        initialStates.addAll(eNFA.getEpsilonClojureIdx(List.of(0)).stream().map(states::get).collect(Collectors.toList()));
     }
 
     public List<State> makeTransitionIdx(List<Integer> statesIndices, String symbol) {
@@ -80,5 +82,9 @@ public class NFA {
 
     public List<State> getStates() {
         return states;
+    }
+
+    public List<Integer> getInitialStatesIdx() {
+        return getInitialStates().stream().map(states::indexOf).collect(Collectors.toList());
     }
 }
