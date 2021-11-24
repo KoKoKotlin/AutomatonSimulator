@@ -1,14 +1,11 @@
 package me.kokokotlin.main.engine;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class State {
     private final String name;
-    private final Map<Character, State> transition;
+    private final Map<Character, List<State>> transition;
     private final String alphabet;
 
     public State(String name, String alphabet) {
@@ -16,7 +13,7 @@ public class State {
         transition = new HashMap<>();
 
         for(int i = 0; i < alphabet.length(); i++) {
-            transition.put(alphabet.charAt(i), null);
+            transition.put(alphabet.charAt(i), new ArrayList<>());
         }
 
         this.alphabet = alphabet;
@@ -28,22 +25,21 @@ public class State {
                 .collect(Collectors.joining());
     }
 
-    public boolean addTransition(Character symbol, State destState) {
-        boolean override = transition.get(symbol) != null;
-
-        transition.put(symbol, destState);
-        return override;
+    public void addTransition(Character symbol, State destState) {
+        transition.get(symbol).add(destState);
     }
 
-    public State getNextState(Character inputSymbol) {
-        return transition.get(inputSymbol);
+    public boolean hasUniqueTransitions() {
+        return true;
     }
+
+    public List<State> getNextStates(Character inputSymbol) { return transition.get(inputSymbol); }
 
     public String getName() {
         return name;
     }
 
-    public Map<Character, State> getTransition() {
+    public Map<Character, List<State>> getTransition() {
         return transition;
     }
 }
