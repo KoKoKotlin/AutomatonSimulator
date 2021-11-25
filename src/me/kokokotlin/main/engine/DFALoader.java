@@ -115,7 +115,7 @@ public class DFALoader {
         startState.get().addTransition(symbol, finalState.get());
     }
 
-    public static Automaton loadFromFile(Path path) {
+    public static DFA loadFromFile(Path path) {
         error = false;
 
         BufferedReader bReader;
@@ -175,7 +175,7 @@ public class DFALoader {
             State[] finalStates_ = new State[finalStates.length];
             Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList()).toArray(finalStates_);
 
-            return new Automaton(states_, states_[header.startingState], finalStates_, header.alphabet);
+            return new DFA(states_, states_[header.startingState], finalStates_, header.alphabet);
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }

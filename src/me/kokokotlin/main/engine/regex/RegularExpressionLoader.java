@@ -1,10 +1,9 @@
 package me.kokokotlin.main.engine.regex;
 
-import me.kokokotlin.main.engine.Automaton;
+import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.State;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 // Idea: create an Epsilon-NFA from the regular expression and then
@@ -50,7 +49,7 @@ public class RegularExpressionLoader {
     // at the end of the conversion, every state needs a transition for every symbol in the alphabet
     // and there can only be one initial state
     // there can also be states that are not reachable. They can be safely removed without changing the behavior of the automaton
-    private static Automaton constructDFA(NFA nfa) {
+    private static DFA constructDFA(NFA nfa) {
         String assembledAlphabet = String.join("", nfa.getAlphabet());
 
         List<List<Integer>> states = new ArrayList<>();     // symbolic states as sets to keep track of the state indices
@@ -119,10 +118,10 @@ public class RegularExpressionLoader {
         // remove unreachable states from final states
         finalStates.stream().filter(dfaStates::contains).collect(Collectors.toList()).toArray(finalStates_);
 
-        return new Automaton(dfaStates_, initialState, finalStates_, assembledAlphabet);
+        return new DFA(dfaStates_, initialState, finalStates_, assembledAlphabet);
     }
 
-    public static Automaton loadFromRegex(String regex) {
+    public static DFA loadFromRegex(String regex) {
         EpsilonNFA eNFA = new EpsilonNFA(regex);
         NFA nfa = new NFA(eNFA);
         return constructDFA(nfa);

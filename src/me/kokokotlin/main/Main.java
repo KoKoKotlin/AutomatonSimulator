@@ -1,6 +1,6 @@
 package me.kokokotlin.main;
 
-import me.kokokotlin.main.engine.Automaton;
+import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.DFALoader;
 import me.kokokotlin.main.engine.graphviz.DotEncoder;
 import me.kokokotlin.main.engine.regex.RegularExpressionLoader;
@@ -114,7 +114,7 @@ If both are provided the program will load from file. The regex will then be not
         }
     }
 
-    private static void interactivePrompt(Automaton automaton) {
+    private static void interactivePrompt(DFA automaton) {
         final Scanner scanner = new Scanner(System.in);
 
         while(true) {
@@ -140,7 +140,7 @@ If both are provided the program will load from file. The regex will then be not
             return;
         }
 
-        Automaton automaton;
+        DFA automaton;
         if (automatonSrc != null) automaton = DFALoader.loadFromFile(automatonSrc);
         else automaton = RegularExpressionLoader.loadFromRegex(regex);
 

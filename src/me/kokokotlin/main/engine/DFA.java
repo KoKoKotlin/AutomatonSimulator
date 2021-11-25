@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Automaton {
+public class DFA {
     private State currentState;
     private final State[] states;
     private final State initialState;
@@ -12,7 +12,7 @@ public class Automaton {
     private final String alphabet;
 
     // check whether each state has unique transitions
-    public Automaton(State[] states, State startingState, State[] finalStates, String alphabet) {
+    public DFA(State[] states, State startingState, State[] finalStates, String alphabet) {
         if (!Arrays.stream(states).allMatch(State::hasUniqueTransitions))
             throw new IllegalArgumentException("DFA needs states with unique transitions!");
 

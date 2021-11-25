@@ -1,6 +1,6 @@
 package me.kokokotlin.main.engine.graphviz;
 
-import me.kokokotlin.main.engine.Automaton;
+import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.State;
 import me.kokokotlin.main.engine.regex.EpsilonNFA;
 import me.kokokotlin.main.engine.regex.NFA;
@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class DotEncoder {
 
@@ -62,7 +61,7 @@ public class DotEncoder {
         }
     }
 
-    private static String dfaToDot(Automaton automaton) {
+    private static String dfaToDot(DFA automaton) {
         StringBuilder dfaDot = new StringBuilder();
 
         writeInitialAndFinalStates(dfaDot, List.of(automaton.getInitialState()), Arrays.asList(automaton.getFinalStates()));
@@ -89,7 +88,7 @@ public class DotEncoder {
         return eNfaDot.toString();
     }
 
-    public static void automatonToDotfile(Automaton automaton, Path outputPath) {
+    public static void automatonToDotfile(DFA automaton, Path outputPath) {
         String dotRepr = "digraph {\n" +
                 "\trankdir=LR\n" +
                 dfaToDot(automaton) +
@@ -116,7 +115,7 @@ public class DotEncoder {
         writeOut(outputPath, dotRepr);
     }
 
-    public static void automatonToPng(Automaton dfa, Path pngPath) {
+    public static void automatonToPng(DFA dfa, Path pngPath) {
         Path tempDotPath = Paths.get("__automaton__.dot");
         automatonToDotfile(dfa, tempDotPath);
 
