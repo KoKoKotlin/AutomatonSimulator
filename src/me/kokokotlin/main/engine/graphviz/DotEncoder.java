@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DotEncoder {
 
@@ -25,12 +25,29 @@ public class DotEncoder {
 
     private static void writeTransitions(StringBuilder sink, List<State> states) {
         for (State state: states) {
+            // group transitions be destination state
+            Map<State, Set<Character>> groupedTransitionChars = new HashMap<>();
             for (var entry: state.getTransition().entrySet()) {
+                Character symbol = entry.getKey();
+                List<State> destStates = entry.getValue();
+
+                for (State s: destStates) {
+                    Set<Character> transitionSymbols = groupedTransitionChars.getOrDefault(s, new HashSet<>());
+                    transitionSymbols.add(symbol);
+                    groupedTransitionChars.put(s, transitionSymbols);
+                }
+            }
+
+            // write all characters to the same state as a label on the same arrow to make the image more clean
+            for (var entry: groupedTransitionChars.entrySet()) {
+                State destState = entry.getKey();
+                String symbols = entry.getValue().stream().map(DotEncoder::handleNull).map(String::valueOf).collect(Collectors.joining(","));
+
                 sink.append("\t");
                 sink.append(state.getName());
                 sink.append(" -> ");
-                sink.append(entry.getValue().get(0).getName());
-                sink.append(String.format(" [label = \" %c\"]", handleNull(entry.getKey())));
+                sink.append(destState.getName());
+                sink.append(String.format(" [label = \" %s\"]", symbols));
                 sink.append("\n");
             }
         }
