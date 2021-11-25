@@ -12,16 +12,15 @@ public class Automaton {
     private final String alphabet;
 
     // check whether each state has unique transitions
-    public Automaton(State[] states, int startingState, Integer[] finalStates, String alphabet) {
+    public Automaton(State[] states, State startingState, State[] finalStates, String alphabet) {
         if (!Arrays.stream(states).allMatch(State::hasUniqueTransitions))
             throw new IllegalArgumentException("DFA needs states with unique transitions!");
 
         this.states = states;
-        this.currentState = this.states[startingState];
+        this.currentState = startingState;
 
-        this.initialState = this.states[startingState];
-        this.finalStates = new State[finalStates.length];
-        for (int i = 0; i < finalStates.length; i++) this.finalStates[i] = this.states[finalStates[i]];
+        this.initialState = startingState;
+        this.finalStates = finalStates;
 
         this.alphabet = alphabet;
     }

@@ -12,11 +12,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class DotEncoder {
 
     private static String getStartStateName(int index) {
         return String.format("__start%d__", index);
+    }
+
+    private static Character handleNull(Character c) {
+        return (c == '\0') ? '.' : c;
     }
 
     private static void writeTransitions(StringBuilder sink, List<State> states) {
@@ -26,7 +31,7 @@ public class DotEncoder {
                 sink.append(state.getName());
                 sink.append(" -> ");
                 sink.append(entry.getValue().get(0).getName());
-                sink.append(String.format(" [label = \" %c\"]", entry.getKey()));
+                sink.append(String.format(" [label = \" %c\"]", handleNull(entry.getKey())));
                 sink.append("\n");
             }
         }

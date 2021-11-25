@@ -172,7 +172,10 @@ public class DFALoader {
                 throw new IllegalStateException(String.format("Not all states are saturated! \n%s", errorMsg));
             }
 
-            return new Automaton(states_, header.startingState, finalStates, header.alphabet);
+            State[] finalStates_ = new State[finalStates.length];
+            Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList()).toArray(finalStates_);
+
+            return new Automaton(states_, states_[header.startingState], finalStates_, header.alphabet);
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }
