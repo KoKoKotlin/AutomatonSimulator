@@ -1,9 +1,9 @@
 package me.kokokotlin.main.engine.graphviz;
 
 import me.kokokotlin.main.engine.DFA;
+import me.kokokotlin.main.engine.ENFA;
+import me.kokokotlin.main.engine.NFA;
 import me.kokokotlin.main.engine.State;
-import me.kokokotlin.main.engine.regex.EpsilonNFA;
-import me.kokokotlin.main.engine.regex.NFA;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -96,7 +96,7 @@ public class DotEncoder {
         return nfaDot.toString();
     }
 
-    private static String toENfaDot(EpsilonNFA eNFA) {
+    private static String toENfaDot(ENFA eNFA) {
         StringBuilder eNfaDot = new StringBuilder();
 
         writeInitialAndFinalStates(eNfaDot, eNFA.getInitialStates(), eNFA.getFinalStates());
@@ -123,7 +123,7 @@ public class DotEncoder {
         writeOut(outputPath, dotRepr);
     }
 
-    public static void automatonToDotfile(EpsilonNFA eNFA, Path outputPath) {
+    public static void automatonToDotfile(ENFA eNFA, Path outputPath) {
         String dotRepr = "digraph {\n" +
                 "\trankdir=LR\n\t" +
                 toENfaDot(eNFA) +

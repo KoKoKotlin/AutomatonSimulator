@@ -1,6 +1,6 @@
 package me.kokokotlin.main.engine.regex;
 
-enum Type {
+public enum Type {
     WILDCARD,
     CONSTANT;
 

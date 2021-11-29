@@ -1,63 +1,90 @@
-package me.kokokotlin.main.engine.regex;
-
-import me.kokokotlin.main.engine.State;
+package me.kokokotlin.main.engine;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class NFA {
+public class NFA extends AutomatonBase {
 
-    // states names are implicitly defined as the indices of the list
-    // the last state is the final state
-
-    private final List<State> initialStates = new ArrayList<>();
-    private final List<String> alphabet;
-    private final List<State> states = new ArrayList<>();
-
-    public NFA(EpsilonNFA eNFA) {
+    /* public NFA(ENFA eNFA) {
         alphabet = eNFA.getAlphabet();
         for (int i = 0; i < eNFA.getStates().size(); i++) states.add(new State(String.valueOf(i), String.join("", getAlphabet()), false));
         constructFromENFA(eNFA);
-        // initialStates = eNFA.getEpsilonClojure();
+    } */ 
+
+    public NFA(List<State> states, List<State> initialStates, List<State> finalStates, List<String> alphabet) {
+        super(states, initialStates, finalStates, alphabet);
     }
 
     // Converting epsilon-NFA to NFA Formula: delta'(q, sigma) = e-Cl(delta(e-Cl(q), sigma))
     // e-Cl(q): epsilon closure of q, delta: transition relation of epsilon-NFA, delta': transition relation of NFA
     // q: state, sigma: input symbol from the alphabet
-    private void constructFromENFA(EpsilonNFA eNFA) {
+    public static NFA constructFromENFA(ENFA eNFA) {
+
+        List<State> states = new ArrayList<>();
+
         // construct a new transition table without epsilon transitions
         // this can introduce and initial states
         // the states could be a set of integers, so we need to keep track of them in a separate list
         for (int i = 0; i < eNFA.getStates().size(); i++) {
-            State currentENFAState = eNFA.getStates().get(i);
             State currentState = states.get(i);
 
             for (String symbol: eNFA.getAlphabet()) {
+                Symbol currentSymbol = new Symbol(symbol);
                 // Formula from above
-                List<Integer> resultingStates = eNFA.getEpsilonClojureIdx(eNFA.makeTransitionIdx(eNFA.getEpsilonClojureIdx(List.of(i)), symbol));
+                List<Integer> resultingStates = eNFA.getEpsilonClojureIdx(eNFA.makeTransitionIdx(eNFA.getEpsilonClojureIdx(List.of(i)), currentSymbol));
                 for (Integer idx: resultingStates) {
-                    currentState.addTransition(symbol.charAt(0), states.get(idx));
+                    currentState.addTransition(currentSymbol, states.get(idx));
                 }
             }
         }
 
-        initialStates.addAll(eNFA.getEpsilonClojureIdx(List.of(0)).stream().map(states::get).collect(Collectors.toList()));
+        return new NFA(states, eNFA.getEpsilonClojureIdx(List.of(0)).stream().map(states::get).collect(Collectors.toList()), List.of(), eNFA.alphabet);
     }
 
-    public List<State> makeTransitionIdx(List<Integer> statesIndices, String symbol) {
+    public List<State> makeTransitionIdx(List<Integer> statesIndices, Symbol symbol) {
         List<State> states_ = statesIndices.stream().map(states::get).collect(Collectors.toList());
         return makeTransition(states_, symbol);
     }
 
-    public List<State> makeTransition(List<State> states, String symbol) {
+    public List<State> makeTransition(List<State> states, Symbol symbol) {
         Set<State> resultingStates = new HashSet<>();
         for (State s: states) resultingStates.addAll(makeTransition(s, symbol));
 
         return resultingStates.stream().toList();
     }
 
-    public List<State> makeTransition(State state, String symbol) {
-        return state.getNextStates(symbol.charAt(0));
+    public List<State> makeTransition(State state, Symbol symbol) {
+        return state.getNextStates(symbol);
+    }
+
+    @Override
+    public boolean match(String word) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public DFA toDFA() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String toDotRepr() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ENFA toENFA() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public NFA toNFA() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public List<State> getInitialStates() {

@@ -9,8 +9,23 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DFALoader {
+public class Loader {
     private static boolean error = false;
+
+    private static enum AutomatonType {
+        DFA,
+        NFA,
+        ENFA;
+
+        static AutomatonType fromString(String repr) throws IllegalArgumentException {
+            switch(repr) {
+                case "dfa":  return DFA;
+                case "nfa":  return NFA;
+                case "enfa": return ENFA;
+                default: throw new IllegalArgumentException("Illegal Automaton type: Type has to be one of the following: dfa, nfa, enfa!");
+            }
+        }
+    } 
 
     static private class Header {
         int stateCount = 0;
@@ -18,25 +33,27 @@ public class DFALoader {
         int startingState = 0;
         List<Integer> finalStates = new ArrayList<>();
         String alphabet = "";
+        AutomatonType type;
     }
 
     private static Header parseHeader(String line) {
         Header header = new Header();
 
         String[] data = line.split(" ");
-        if (data.length < 5) {
-            System.err.printf("Error while parsing header! Not enough arguments. Expected 5 or more got %d!\n", data.length);
+        if (data.length < 6) {
+            System.err.printf("Error while parsing header! Not enough arguments. Expected 6 or more got %d!\n", data.length);
             error = true;
             return null;
         }
 
         try {
-            header.stateCount = Integer.parseInt(data[0]);
-            header.transitionCount = Integer.parseInt(data[1]);
-            header.startingState = Integer.parseInt(data[2]);
-            header.alphabet = data[3];
-            for (int i = 4; i < data.length; i++) header.finalStates.add(Integer.parseInt(data[i]));
-        } catch (NumberFormatException e) {
+            header.type = AutomatonType.fromString(data[0]);
+            header.stateCount = Integer.parseInt(data[1]);
+            header.transitionCount = Integer.parseInt(data[2]);
+            header.startingState = Integer.parseInt(data[3]);
+            header.alphabet = data[4];
+            for (int i = 5; i < data.length; i++) header.finalStates.add(Integer.parseInt(data[i]));
+        } catch (IllegalArgumentException e) {
             System.err.printf("Error while parsing header: %s!\n", e.getMessage());
             error = true;
             return null;

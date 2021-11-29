@@ -2,7 +2,7 @@ package me.kokokotlin.main.engine.regex;
 
 import java.util.*;
 
-class RegexStack {
+public class RegexStack {
     private final Deque<RegexState> stack = new ArrayDeque<>();
     private final Set<String> alphabet = new HashSet<>();
 

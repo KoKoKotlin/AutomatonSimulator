@@ -1,7 +1,7 @@
 package me.kokokotlin.main;
 
 import me.kokokotlin.main.engine.DFA;
-import me.kokokotlin.main.engine.DFALoader;
+import me.kokokotlin.main.engine.Loader;
 import me.kokokotlin.main.engine.graphviz.DotEncoder;
 import me.kokokotlin.main.engine.regex.RegularExpressionLoader;
 
@@ -122,11 +122,12 @@ If both are provided the program will load from file. The regex will then be not
             String userInput = scanner.nextLine();
 
             if ("q".equals(userInput)) {
+                scanner.close();
                 return;
             } else if ("p".equals(userInput)) {
                 System.out.println(automaton.getStringRepr());
             } else {
-                System.out.printf("Word: %s, Accepted: %s\n", convertWord(userInput), automaton.isAccepted(userInput));
+                System.out.printf("Word: %s, Accepted: %s\n", convertWord(userInput), automaton.match(userInput));
             }
         }
     }
@@ -141,7 +142,7 @@ If both are provided the program will load from file. The regex will then be not
         }
 
         DFA automaton;
-        if (automatonSrc != null) automaton = DFALoader.loadFromFile(automatonSrc);
+        if (automatonSrc != null) automaton = Loader.loadFromFile(automatonSrc);
         else automaton = RegularExpressionLoader.loadFromRegex(regex);
 
         if (automaton == null) return;
@@ -175,7 +176,7 @@ If both are provided the program will load from file. The regex will then be not
                 return;
             }
 
-            System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.isAccepted(word));
+            System.out.printf("Word: %s, Accepted: %s\n", convertWord(word), automaton.match(word));
         }
     }
 }

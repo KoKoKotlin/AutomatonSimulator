@@ -1,36 +1,38 @@
 package me.kokokotlin.main.engine;
 
-import me.kokokotlin.main.engine.regex.EpsilonNFA;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class State {
     private final String name;
-    private final Map<Character, List<State>> transition;
-    private final String alphabet;
+    private final Map<Symbol, List<State>> transition;
+    private final List<String> alphabet;
 
-    public State(String name, String alphabet, boolean needsEpsilon) {
+    public State(String name, List<String> alphabet, boolean needsEpsilon) {
         this.name = name;
         transition = new HashMap<>();
 
         if (needsEpsilon)
-            transition.put(EpsilonNFA.EPSILON, new ArrayList<>());
+            transition.put(Symbol.epsilon(), new ArrayList<>());
 
-        for(int i = 0; i < alphabet.length(); i++) {
-            transition.put(alphabet.charAt(i), new ArrayList<>());
+        for(int i = 0; i < alphabet.size(); i++) {
+            transition.put(new Symbol(alphabet.get(i)), new ArrayList<>());
         }
 
         this.alphabet = alphabet;
     }
 
+    // TODO: refactoring for symbol 
     public String missingChars() {
-        return Arrays.stream(alphabet.split(""))
-                .filter(c -> transition.get(c.charAt(0)) == null)
+        /*
+        return alphabet.stream()
+                .filter(c -> transition.get(c) == null)
                 .collect(Collectors.joining());
+        */
+        return "";
     }
 
-    public void addTransition(Character symbol, State destState) {
+    public void addTransition(Symbol symbol, State destState) {
         transition.get(symbol).add(destState);
     }
 
@@ -38,19 +40,19 @@ public class State {
         return transition.entrySet().stream().allMatch(entry -> entry.getValue().size() == 1);
     }
 
-    public List<State> getNextStates(Character inputSymbol) { return transition.get(inputSymbol); }
+    public List<State> getNextStates(Symbol inputSymbol) { return transition.get(inputSymbol); }
 
     public String getName() {
         return name;
     }
 
-    public Map<Character, List<State>> getTransition() {
+    public Map<Symbol, List<State>> getTransition() {
         return transition;
     }
 
     private String transitionToString() {
         return transition.entrySet().stream().map(entry -> {
-            Character c = entry.getKey();
+            Symbol c = entry.getKey();
             List<State> val = entry.getValue();
 
             return String.format("%c ↦ { %s }", c, val.stream().map(s -> s.name).collect(Collectors.joining(", ")));

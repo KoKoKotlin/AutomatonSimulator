@@ -1,9 +1,11 @@
 package me.kokokotlin.main.engine.regex;
 
-class RegexState {
-    String symbol;
-    SymbolFrequency frequency;
-    Type type;
+import me.kokokotlin.main.engine.Symbol;
+
+public class RegexState {
+    public String symbol;
+    public SymbolFrequency frequency;
+    public Type type;
 
     public RegexState(String symbol) {
         this.symbol = symbol;
@@ -15,6 +17,11 @@ class RegexState {
         RegexState r = new RegexState("");
         r.type = Type.WILDCARD;
         return r;
+    }
+
+    public Symbol toSymbol() {
+        if (type == Type.WILDCARD) return Symbol.wildcard();
+        else return new Symbol(this.symbol);
     }
 
     @Override

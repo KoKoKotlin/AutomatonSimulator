@@ -1,6 +1,8 @@
 package me.kokokotlin.main.engine.regex;
 
 import me.kokokotlin.main.engine.DFA;
+import me.kokokotlin.main.engine.ENFA;
+import me.kokokotlin.main.engine.NFA;
 import me.kokokotlin.main.engine.State;
 
 import java.util.*;
@@ -122,7 +124,7 @@ public class RegularExpressionLoader {
     }
 
     public static DFA loadFromRegex(String regex) {
-        EpsilonNFA eNFA = new EpsilonNFA(regex);
+        ENFA eNFA = new ENFA(regex);
         NFA nfa = new NFA(eNFA);
         return constructDFA(nfa);
     }

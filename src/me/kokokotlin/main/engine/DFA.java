@@ -1,65 +1,82 @@
 package me.kokokotlin.main.engine;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class DFA {
+public class DFA extends AutomatonBase {
     private State currentState;
-    private final State[] states;
-    private final State initialState;
-    private final State[] finalStates;
-    private final String alphabet;
 
-    // check whether each state has unique transitions
-    public DFA(State[] states, State startingState, State[] finalStates, String alphabet) {
-        if (!Arrays.stream(states).allMatch(State::hasUniqueTransitions))
-            throw new IllegalArgumentException("DFA needs states with unique transitions!");
+    public DFA(List<State> states, List<State> initialStates, List<State> finalStates, List<String> alphabet) {
+        super(states, initialStates, finalStates, alphabet);
 
-        this.states = states;
-        this.currentState = startingState;
-
-        this.initialState = startingState;
-        this.finalStates = finalStates;
-
-        this.alphabet = alphabet;
+        if (!isValidDFA())
+            throw new IllegalArgumentException("DFA needs states with unique transitions and only one initial state!");
     }
 
     private void reset() {
-        currentState = initialState;
+        currentState = initialStates.get(0);
     }
 
-    public boolean isAccepted(String word) {
+    private boolean isValidDFA() {
+        return states.stream().allMatch(State::hasUniqueTransitions) && initialStates.size() == 1;
+    }
+
+    @Override
+    public boolean match(String word) {
         reset();
 
         for (int i = 0; i < word.length(); i++) {
             char c = word.charAt(i);
-            currentState = currentState.getNextStates(c).get(0);
+            currentState = currentState.getNextStates(new Symbol(String.valueOf(c))).get(0);
         }
 
-        return Arrays.stream(finalStates).anyMatch((State s) -> s == currentState);
+        return finalStates.stream().anyMatch((State s) -> s == currentState);
+    }
+
+    @Override
+    public DFA toDFA() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String toDotRepr() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ENFA toENFA() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public NFA toNFA() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     private String getTransitionRepr() {
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (int i = 0; i < states.length; i++) {
-            State current = states[i];
+        for (int i = 0; i < states.size(); i++) {
+            State current = states.get(i);
             stringBuilder.append(String.format("State (%s): \n", current.getName()));
             stringBuilder.append(current.getTransition().entrySet().stream()
                     .map(entry -> String.format("\t%c -> %s", entry.getKey(), entry.getValue().get(0).getName()))
                     .collect(Collectors.joining("\n")));
 
-            if (i != states.length - 1) stringBuilder.append("\n");
+            if (i != states.size() - 1) stringBuilder.append("\n");
         }
         
         return stringBuilder.toString();
     }
 
     public String getStringRepr() {
-        String stateNames = Arrays.stream(states).map(State::getName).collect(Collectors.joining(", "));
-        String finalNames = Arrays.stream(finalStates).map(State::getName).collect(Collectors.joining(", "));
-        String alphabetRepr = "{ " + String.join(", ", alphabet.split("")) + " }";
+        String stateNames = states.stream().map(State::getName).collect(Collectors.joining(", "));
+        String finalNames = finalStates.stream().map(State::getName).collect(Collectors.joining(", "));
+        String alphabetRepr = "{ " + String.join(", ", alphabet) + " }";
         String stateRepr = "{ " + stateNames + " }";
         String finalStateRepr = "{ " + finalNames + " }";
         return String.format("""
@@ -69,22 +86,6 @@ public class DFA {
                %s,
                Initial state: %s,
                Final states: %s
-               """, alphabetRepr, stateRepr, getTransitionRepr(), initialState.getName(), finalStateRepr);
-    }
-
-    public State getCurrentState() {
-        return currentState;
-    }
-
-    public State[] getStates() {
-        return states;
-    }
-
-    public State getInitialState() {
-        return initialState;
-    }
-
-    public State[] getFinalStates() {
-        return finalStates;
+               """, alphabetRepr, stateRepr, getTransitionRepr(), initialStates.get(0).getName(), finalStateRepr);
     }
 }
