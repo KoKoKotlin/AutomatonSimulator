@@ -4,6 +4,7 @@ import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.ENFA;
 import me.kokokotlin.main.engine.NFA;
 import me.kokokotlin.main.engine.State;
+import me.kokokotlin.main.engine.Symbol;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -19,20 +20,16 @@ public class DotEncoder {
         return String.format("__start%d__", index);
     }
 
-    private static Character handleNull(Character c) {
-        return (c == '\0') ? '.' : c;
-    }
-
     private static void writeTransitions(StringBuilder sink, List<State> states) {
         for (State state: states) {
             // group transitions be destination state
-            Map<State, Set<Character>> groupedTransitionChars = new HashMap<>();
+            Map<State, Set<Symbol>> groupedTransitionChars = new HashMap<>();
             for (var entry: state.getTransition().entrySet()) {
-                Character symbol = entry.getKey();
+                Symbol symbol = entry.getKey();
                 List<State> destStates = entry.getValue();
 
                 for (State s: destStates) {
-                    Set<Character> transitionSymbols = groupedTransitionChars.getOrDefault(s, new HashSet<>());
+                    Set<Symbol> transitionSymbols = groupedTransitionChars.getOrDefault(s, new HashSet<>());
                     transitionSymbols.add(symbol);
                     groupedTransitionChars.put(s, transitionSymbols);
                 }
@@ -41,7 +38,7 @@ public class DotEncoder {
             // write all characters to the same state as a label on the same arrow to make the image more clean
             for (var entry: groupedTransitionChars.entrySet()) {
                 State destState = entry.getKey();
-                String symbols = entry.getValue().stream().map(DotEncoder::handleNull).map(String::valueOf).collect(Collectors.joining(","));
+                String symbols = entry.getValue().stream().map(s -> s.dotRepr()).collect(Collectors.joining(","));
 
                 sink.append("\t");
                 sink.append(state.getName());
@@ -78,11 +75,11 @@ public class DotEncoder {
         }
     }
 
-    private static String dfaToDot(DFA automaton) {
+    private static String dfaToDot(DFA dfa) {
         StringBuilder dfaDot = new StringBuilder();
 
-        writeInitialAndFinalStates(dfaDot, List.of(automaton.getInitialState()), Arrays.asList(automaton.getFinalStates()));
-        writeTransitions(dfaDot, Arrays.asList(automaton.getStates()));
+        writeInitialAndFinalStates(dfaDot, dfa.getInitialStates(), dfa.getFinalStates());
+        writeTransitions(dfaDot, dfa.getStates());
 
         return dfaDot.toString();
     }
