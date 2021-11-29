@@ -129,7 +129,7 @@ public class Loader {
         if (startState.isEmpty() || finalState.isEmpty())
             throw new IllegalStateException("Internal Error!");
 
-        startState.get().addTransition(symbol, finalState.get());
+        startState.get().addTransition(new Symbol(String.valueOf(symbol)), finalState.get());
     }
 
     public static DFA loadFromFile(Path path) {
@@ -159,7 +159,7 @@ public class Loader {
                 if (i > 0 && (i - 1) < header.stateCount) {
                     String stateName = parseState(line, i);
                     stateNames.add(stateName);
-                    states.add(new State(stateName, header.alphabet, false));
+                    states.add(new State(stateName, Arrays.asList(header.alphabet.split("")), false));
                 }
                 if (error) return null;
 
@@ -189,10 +189,9 @@ public class Loader {
                 throw new IllegalStateException(String.format("Not all states are saturated! \n%s", errorMsg));
             }
 
-            State[] finalStates_ = new State[finalStates.length];
-            Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList()).toArray(finalStates_);
+            List<State> finalStates_ = Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList());
 
-            return new DFA(states_, states_[header.startingState], finalStates_, header.alphabet);
+            return new DFA(states, List.of(states.get(header.startingState)), finalStates_, Arrays.asList(header.alphabet.split("")));
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }
