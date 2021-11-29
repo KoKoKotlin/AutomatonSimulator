@@ -4,6 +4,7 @@ import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.ENFA;
 import me.kokokotlin.main.engine.NFA;
 import me.kokokotlin.main.engine.State;
+import me.kokokotlin.main.engine.Symbol;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,14 +53,12 @@ public class RegularExpressionLoader {
     // and there can only be one initial state
     // there can also be states that are not reachable. They can be safely removed without changing the behavior of the automaton
     private static DFA constructDFA(NFA nfa) {
-        String assembledAlphabet = String.join("", nfa.getAlphabet());
-
         List<List<Integer>> states = new ArrayList<>();     // symbolic states as sets to keep track of the state indices
         List<State> dfaStates = new ArrayList<>();          // actual dfa states
 
         for (int i = 0; i < nfa.getStateCount(); i++) {
             states.add(List.of(i));
-            dfaStates.add(new State(String.valueOf(i), assembledAlphabet, false));
+            dfaStates.add(new State(String.valueOf(i), nfa.getAlphabet(), false));
         }
         int currentStateIndex = 0;
 
@@ -68,7 +67,9 @@ public class RegularExpressionLoader {
             State currentDfaState = dfaStates.get(currentStateIndex);
 
             for (String symbol: nfa.getAlphabet()) {
-                List<State> resultState_ = nfa.makeTransitionIdx(currentState, symbol);
+                Symbol currentSymbol = new Symbol(symbol);
+
+                List<State> resultState_ = nfa.makeTransitionIdx(currentState, currentSymbol);
                 List<Integer> resultState = resultState_.stream().map(nfa::getStateIndex).collect(Collectors.toList());
 
                 if (!states.contains(resultState)) {
@@ -77,11 +78,11 @@ public class RegularExpressionLoader {
                     if (resultState.size() == 0) stateName = "∅";
                     else stateName = resultState.stream().map(String::valueOf).collect(Collectors.joining(""));
 
-                    dfaStates.add(new State(stateName, assembledAlphabet, false));
+                    dfaStates.add(new State(stateName, nfa.getAlphabet(), false));
                 }
 
                 int index = states.indexOf(resultState);
-                currentDfaState.addTransition(symbol.charAt(0), dfaStates.get(index));
+                currentDfaState.addTransition(currentSymbol, dfaStates.get(index));
             }
 
             currentStateIndex++;
@@ -97,7 +98,6 @@ public class RegularExpressionLoader {
             if (state.contains(finalStateIndex)) finalStates.add(currentState);
         }
 
-
         // find initial state
         int startingStateIndex = -1;
         List<Integer> nfaInitialState = nfa.getInitialStatesIdx();
@@ -112,20 +112,15 @@ public class RegularExpressionLoader {
         State initialState = dfaStates.get(startingStateIndex);
         dfaStates = removeUnreachableStates(dfaStates, initialState);
 
-        State[] dfaStates_ = new State[dfaStates.size()];
-        dfaStates.toArray(dfaStates_);
-
-        State[] finalStates_ = new State[finalStates.size()];
-
         // remove unreachable states from final states
-        finalStates.stream().filter(dfaStates::contains).collect(Collectors.toList()).toArray(finalStates_);
+        finalStates = finalStates.stream().filter(dfaStates::contains).collect(Collectors.toList());
 
-        return new DFA(dfaStates_, initialState, finalStates_, assembledAlphabet);
+        return new DFA(dfaStates, List.of(initialState), finalStates, nfa.getAlphabet());
     }
 
     public static DFA loadFromRegex(String regex) {
-        ENFA eNFA = new ENFA(regex);
-        NFA nfa = new NFA(eNFA);
+        ENFA eNFA = ENFA.fromRegex(regex);
+        NFA nfa = NFA.constructFromENFA(eNFA);
         return constructDFA(nfa);
     }
 }
