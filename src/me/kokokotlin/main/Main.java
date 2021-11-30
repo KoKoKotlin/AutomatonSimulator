@@ -42,8 +42,8 @@ Command line switches:
     -c: Check the source for errors (only works with provided source files)
     -d <path>: Write graph representation to dot file for graphviz [default: automaton.dot]
     -i: Start program in interactive mode
-    -p <path>: Path of the source of the automaton [default: automaton.png]
-    -png <path>: Save a image of the graph at the given path
+    -p <path>: Path of the source of the automaton 
+    -png <path>: Save a image of the graph at the given path [default: automaton.png]
     -regex <regular expression>: Regular expression from which an automaton is build
     -w: Input word for the automaton [required when no -i, -c, -d, -r provided]
 
