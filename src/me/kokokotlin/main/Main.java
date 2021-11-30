@@ -45,7 +45,7 @@ Command line switches:
     -p <path>: Path of the source of the automaton 
     -png <path>: Save a image of the graph at the given path [default: automaton.png]
     -regex <regular expression>: Regular expression from which an automaton is build
-    -w: Input word for the automaton [required when no -i, -c, -d, -r provided]
+    -w: Input word for the automaton [required when no -i, -c, -d provided]
 
 You have to provide a path to a source file or a regular expression such that an automaton can be loaded.
 If neither is provided, the program will exit without further action.
