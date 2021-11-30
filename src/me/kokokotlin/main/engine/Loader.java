@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.spi.NumberFormatProvider;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,10 +32,26 @@ public class Loader {
     static private class Header {
         int stateCount = 0;
         int transitionCount = 0;
-        int startingState = 0;
+        List<Integer> initialStates = new ArrayList<>();
         List<Integer> finalStates = new ArrayList<>();
         String alphabet = "";
         AutomatonType type;
+    }
+
+    private static List<Integer> parseStates(String stateRepr) {
+        List<Integer> stateIdx = new ArrayList<>();
+        
+        for (String idx: stateRepr.replace("(", "").replace(")", "").replace(" ", "").split(",")) {
+            try {
+                stateIdx.add(Integer.valueOf(idx));
+            } catch (NumberFormatException e) {
+                System.err.printf("Error while parsing state indices in header! %s\n", e.getMessage());
+                error = true;
+                return null;
+            }
+        }
+
+        return stateIdx;
     }
 
     private static Header parseHeader(String line) {
@@ -51,11 +68,31 @@ public class Loader {
             header.type = AutomatonType.fromString(data[0]);
             header.stateCount = Integer.parseInt(data[1]);
             header.transitionCount = Integer.parseInt(data[2]);
-            header.startingState = Integer.parseInt(data[3]);
-            header.alphabet = data[4];
-            for (int i = 5; i < data.length; i++) header.finalStates.add(Integer.parseInt(data[i]));
+            
+            // parse the state indices -> first iteration initial states, second iteration: final states
+            int current = 3;
+            for (int i = 0; i < 2; i++) {
+                StringBuilder stateRepr = new StringBuilder();
+                while (!data[current].contains(")")) {
+                    stateRepr.append(data[current]);
+                    current++;
+                }
+                stateRepr.append(data[current]);
+                
+                List<Integer> stateIdx = parseStates(stateRepr.toString());
+                if (stateIdx == null) return null;
+
+                if (i == 0) header.initialStates = stateIdx;
+                else if (i == 1) header.finalStates = stateIdx;
+            }
+
+            header.alphabet = data[current];
         } catch (IllegalArgumentException e) {
             System.err.printf("Error while parsing header: %s!\n", e.getMessage());
+            error = true;
+            return null;
+        } catch (IndexOutOfBoundsException e) {
+            System.err.println("Malformed header! Probably something is wrong with your paranthesis.");
             error = true;
             return null;
         }
@@ -179,12 +216,6 @@ public class Loader {
                 i++;
             }
 
-            State[] states_ = new State[states.size()];
-            states.toArray(states_);
-
-            Integer[] finalStates = new Integer[header.finalStates.size()];
-            header.finalStates.toArray(finalStates);
-
             // if the loaded automaton is a DFA -> check if all needed transitions are present
             List<String> missing = states.stream().map(State::missingChars).collect(Collectors.toList());
             if (header.type == AutomatonType.DFA) {
@@ -203,9 +234,10 @@ public class Loader {
                 throw new IllegalStateException("Automaton that isn't a ENFA can't contain epislon transitions!");
             }
             
-            List<State> finalStates_ = Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList());
+            List<State> initialStates = header.initialStates.stream().map(idx -> states.get(idx)).collect(Collectors.toList());
+            List<State> finalStates   = header.finalStates.stream().map(idx -> states.get(idx)).collect(Collectors.toList());
 
-            return new DFA(states, List.of(states.get(header.startingState)), finalStates_, Arrays.asList(header.alphabet.split("")));
+            return new DFA(states, initialStates, finalStates, Arrays.asList(header.alphabet.split("")));
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }
