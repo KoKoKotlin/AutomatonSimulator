@@ -1,7 +1,6 @@
 package me.kokokotlin.main;
 
 import me.kokokotlin.main.engine.AutomatonBase;
-import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.Loader;
 import me.kokokotlin.main.engine.graphviz.DotEncoder;
 import me.kokokotlin.main.engine.regex.RegularExpressionLoader;
