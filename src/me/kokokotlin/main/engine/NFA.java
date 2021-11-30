@@ -57,9 +57,19 @@ public class NFA extends AutomatonBase {
         return state.getNextStates(symbol);
     }
 
+    // idea: save a list with all states the automaton could currently be in
+    // and update the list which the automaton could reach next given the current states
+    // the word is accepted if this list contains at least one final state after the last symbol is read
+    // this list is initilized with the list of initial states 
     @Override
     public boolean match(String word) {
-        return false;
+        List<State> currentStates = getInitialStates();
+        
+        for (String symbol: word.split("")) {
+            currentStates = makeTransition(currentStates, new Symbol(symbol));
+        }
+
+        return currentStates.stream().anyMatch(s -> finalStates.contains(s));
     }
 
     @Override
