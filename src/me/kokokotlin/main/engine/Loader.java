@@ -198,8 +198,11 @@ public class Loader {
                 }
             }
 
-            // if the loaded automaton is a NFA -> check, that there aren't any epsilon transitions
-
+            // if the loaded automaton is a DFA or NFA -> check, that there aren't any epsilon transitions
+            if (hasEpsilons && header.type != AutomatonType.ENFA) {
+                throw new IllegalStateException("Automaton that isn't a ENFA can't contain epislon transitions!");
+            }
+            
             List<State> finalStates_ = Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList());
 
             return new DFA(states, List.of(states.get(header.startingState)), finalStates_, Arrays.asList(header.alphabet.split("")));
