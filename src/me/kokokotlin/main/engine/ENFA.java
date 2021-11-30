@@ -165,9 +165,19 @@ public class ENFA extends AutomatonBase {
         return new ENFA(states, List.of(states.get(0)), List.of(states.get(states.size() - 1)), alphabet, hasEpsilons);
     }
 
+    // idea: like nfa only that after the transition the next states will be the epsilon clojure of the current states
+    // and also you have to check that after the last iteration the state is contained in the epsilon clojure of final states
+    // and you start the algorithm with the epsilon clojure of the initial states
     @Override
     public boolean match(String word) {
-        return false;
+        List<State> currentStates = getEpsilonClojure(getInitialStates());
+        
+        for (String symbol: word.split("")) {
+            currentStates = getEpsilonClojure(makeTransition(currentStates, new Symbol(symbol)));
+        }
+
+        final List<State> finalEpsilonClojure = getEpsilonClojure(getFinalStates());
+        return currentStates.stream().anyMatch(s -> finalEpsilonClojure.contains(s));
     }
 
     @Override
