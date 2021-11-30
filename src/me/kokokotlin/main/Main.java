@@ -1,5 +1,6 @@
 package me.kokokotlin.main;
 
+import me.kokokotlin.main.engine.AutomatonBase;
 import me.kokokotlin.main.engine.DFA;
 import me.kokokotlin.main.engine.Loader;
 import me.kokokotlin.main.engine.graphviz.DotEncoder;
@@ -16,7 +17,6 @@ import java.util.Scanner;
 public class Main {
     private static boolean interactive = false;
     private static boolean checkSrc = false;
-    private static boolean repr = false;
 
     private static boolean dotFile = false;
     private static Path dotPath;
@@ -44,7 +44,6 @@ Command line switches:
     -i: Start program in interactive mode
     -p <path>: Path of the source of the automaton [default: automaton.png]
     -png <path>: Save a image of the graph at the given path
-    -r: Print parsed version of automaton
     -regex <regular expression>: Regular expression from which an automaton is build
     -w: Input word for the automaton [required when no -i, -c, -d, -r provided]
 
@@ -91,9 +90,6 @@ If both are provided the program will load from file. The regex will then be not
                 case "-c" -> {
                     checkSrc = true;
                 }
-                case "-r" -> {
-                    repr = true;
-                }
                 case "-d" -> {
                     dotFile = true;
                     String maybePath = tryGetArgument(argQueue);
@@ -114,7 +110,7 @@ If both are provided the program will load from file. The regex will then be not
         }
     }
 
-    private static void interactivePrompt(DFA automaton) {
+    private static void interactivePrompt(AutomatonBase automaton) {
         final Scanner scanner = new Scanner(System.in);
 
         while(true) {
@@ -124,8 +120,6 @@ If both are provided the program will load from file. The regex will then be not
             if ("q".equals(userInput)) {
                 scanner.close();
                 return;
-            } else if ("p".equals(userInput)) {
-                System.out.println(automaton.getStringRepr());
             } else {
                 System.out.printf("Word: %s, Accepted: %s\n", convertWord(userInput), automaton.match(userInput));
             }
@@ -141,7 +135,7 @@ If both are provided the program will load from file. The regex will then be not
             return;
         }
 
-        DFA automaton;
+        AutomatonBase automaton;
         if (automatonSrc != null) automaton = Loader.loadFromFile(automatonSrc);
         else automaton = RegularExpressionLoader.loadFromRegex(regex);
 
@@ -159,11 +153,6 @@ If both are provided the program will load from file. The regex will then be not
 
         if (checkSrc && automatonSrc != null) {
             System.out.printf("No syntactical errors found in \"%s\".\n", automatonSrc.toString());
-            return;
-        }
-
-        if (repr) {
-            System.out.println(automaton.getStringRepr());
             return;
         }
 

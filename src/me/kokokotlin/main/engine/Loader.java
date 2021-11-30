@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class Loader {
     private static boolean error = false;
+    private static boolean hasEpsilons = false;
 
     private static enum AutomatonType {
         DFA,
@@ -101,7 +102,8 @@ public class Loader {
             error = true;
             return;
         }
-        Character symbol = transitionData[3].charAt(0);
+        
+        String symbol = transitionData[3];
         String finalStateName = transitionData[2];
 
 
@@ -128,11 +130,16 @@ public class Loader {
 
         if (startState.isEmpty() || finalState.isEmpty())
             throw new IllegalStateException("Internal Error!");
-
+        
+        if (symbol.equals("")) { 
+            symbol = Symbol.EPSILON;
+            hasEpsilons = true;
+        }
+        
         startState.get().addTransition(new Symbol(String.valueOf(symbol)), finalState.get());
     }
 
-    public static DFA loadFromFile(Path path) {
+    public static AutomatonBase loadFromFile(Path path) {
         error = false;
 
         BufferedReader bReader;
@@ -178,16 +185,20 @@ public class Loader {
             Integer[] finalStates = new Integer[header.finalStates.size()];
             header.finalStates.toArray(finalStates);
 
+            // if the loaded automaton is a DFA -> check if all needed transitions are present
             List<String> missing = states.stream().map(State::missingChars).collect(Collectors.toList());
+            if (header.type == AutomatonType.DFA) {
+                if (missing.stream().anyMatch(s -> s.length() != 0)) {
+                    var notSaturated = Tuple.zip(states, missing).stream()
+                            .filter(t -> t.getSecond().length() != 0)
+                            .collect(Collectors.toList());
 
-            if (missing.stream().anyMatch(s -> s.length() != 0)) {
-                var notSaturated = Tuple.zip(states, missing).stream()
-                        .filter(t -> t.getSecond().length() != 0)
-                        .collect(Collectors.toList());
-
-                String errorMsg = errorForNonSaturatedStates(notSaturated);
-                throw new IllegalStateException(String.format("Not all states are saturated! \n%s", errorMsg));
+                    String errorMsg = errorForNonSaturatedStates(notSaturated);
+                    throw new IllegalStateException(String.format("Not all states are saturated! \n%s", errorMsg));
+                }
             }
+
+            // if the loaded automaton is a NFA -> check, that there aren't any epsilon transitions
 
             List<State> finalStates_ = Arrays.stream(finalStates).map(idx -> states_[idx]).collect(Collectors.toList());
 

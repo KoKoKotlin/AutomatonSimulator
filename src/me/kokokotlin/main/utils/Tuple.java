@@ -1,7 +1,6 @@
 package me.kokokotlin.main.utils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Tuple<U, V> {
