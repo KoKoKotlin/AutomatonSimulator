@@ -59,32 +59,22 @@ public class NFA extends AutomatonBase {
 
     @Override
     public boolean match(String word) {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public DFA toDFA() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String toDotRepr() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ENFA toENFA() {
-        // TODO Auto-generated method stub
-        return null;
+        return DFA.constructDFA(this);
     }
 
     @Override
     public NFA toNFA() {
-        // TODO Auto-generated method stub
-        return null;
+        return this;
+    }
+
+    @Override
+    public ENFA toENFA() {
+        return new ENFA(states, initialStates, finalStates, alphabet, false);
     }
 
     public List<State> getInitialStates() {

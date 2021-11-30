@@ -167,32 +167,22 @@ public class ENFA extends AutomatonBase {
 
     @Override
     public boolean match(String word) {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public DFA toDFA() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String toDotRepr() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ENFA toENFA() {
-        // TODO Auto-generated method stub
-        return null;
+        return NFA.constructFromENFA(this).toDFA();
     }
 
     @Override
     public NFA toNFA() {
-        // TODO Auto-generated method stub
-        return null;
+        return NFA.constructFromENFA(this);
+    }
+
+    @Override
+    public ENFA toENFA() {
+        return this;
     }
 
     public boolean hasEpsilons() {

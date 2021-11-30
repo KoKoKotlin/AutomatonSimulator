@@ -2,6 +2,8 @@ package me.kokokotlin.main.engine;
 
 import java.util.List;
 
+import static me.kokokotlin.main.engine.graphviz.DotUtils.*;
+
 public abstract class AutomatonBase {
     
     protected final List<State> states;
@@ -19,7 +21,16 @@ public abstract class AutomatonBase {
 
     public abstract boolean match(String word);
     
-    public abstract String toDotRepr();
+    public String toDotRepr() {
+        StringBuilder repr = new StringBuilder();
+        
+        repr.append("digraph {\n\trankdir=LR\n");        
+        writeInitialAndFinalStates(repr, this.getInitialStates(), this.getFinalStates());
+        writeTransitions(repr, this.getStates());
+        repr.append("}\n");
+
+        return repr.toString();
+    }
     
     public abstract DFA toDFA();
     public abstract NFA toNFA();
