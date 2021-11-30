@@ -1,0 +1,7 @@
+nfa 3 3 (0) (0, 2) abc
+s q_0
+s q_1
+s q_2
+t q_0 q_1 a
+t q_1 q_2 b
+t q_2 q_2 a

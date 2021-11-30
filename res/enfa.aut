@@ -1,0 +1,9 @@
+enfa 4 5 (0, 3) (3) ab
+s start
+s 1
+s 2
+s end
+t start 1 ""
+t start 2 a
+t 1 end b
+t 2 end a

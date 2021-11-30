@@ -2,13 +2,15 @@ package me.kokokotlin.main.engine;
 
 import me.kokokotlin.main.utils.Tuple;
 
+import java.beans.Expression;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.spi.NumberFormatProvider;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.sound.sampled.SourceDataLine;
 
 public class Loader {
     private static boolean error = false;
@@ -77,7 +79,7 @@ public class Loader {
                     stateRepr.append(data[current]);
                     current++;
                 }
-                stateRepr.append(data[current]);
+                stateRepr.append(data[current++]);
                 
                 List<Integer> stateIdx = parseStates(stateRepr.toString());
                 if (stateIdx == null) return null;
@@ -118,7 +120,7 @@ public class Loader {
         return lineData[1];
     }
 
-    private static void parseTransition(String line, int lineCount, List<String> stateNames, List<State> states, String alphabet) {
+    private static void parseTransition(String line, int lineCount, List<String> stateNames, List<State> states, Header header) {
         String[] transitionData = line.split(" ");
 
         if (transitionData.length != 4) {
@@ -134,16 +136,15 @@ public class Loader {
         }
 
         String startStateName = transitionData[1];
-        if (transitionData[3].length() != 1) {
+        String symbol = transitionData[3];
+        String finalStateName = transitionData[2];
+
+        if (symbol.length() != 1 && !symbol.equals("\"\"")) {
             System.err.printf("Error while parsing line %d! Second argument has to be character! Got %s.\n", lineCount, transitionData[3]);
             error = true;
             return;
         }
         
-        String symbol = transitionData[3];
-        String finalStateName = transitionData[2];
-
-
         if (!stateNames.contains(startStateName)) {
             System.err.printf("Error while parsing line %d! Starting state %s not defined!", lineCount, startStateName);
             error = true;
@@ -156,7 +157,7 @@ public class Loader {
             return;
         }
 
-        if (!alphabet.contains(transitionData[3])) {
+        if (!header.alphabet.contains(transitionData[3]) && !symbol.equals("\"\"")) {
             System.err.printf("Error while parsing line %d! Symbol %s not in alphabet!", lineCount, transitionData[3]);
             error = true;
             return;
@@ -165,14 +166,16 @@ public class Loader {
         Optional<State> startState = states.stream().filter(state -> state.getName().equals(startStateName)).findFirst();
         Optional<State> finalState = states.stream().filter(state -> state.getName().equals(finalStateName)).findFirst();
 
-        if (startState.isEmpty() || finalState.isEmpty())
-            throw new IllegalStateException("Internal Error!");
-        
-        if (symbol.equals("")) { 
+        if (startState.isEmpty() || finalState.isEmpty()) 
+            throw new IllegalStateException("Internal error!");
+
+        if (symbol.equals("\"\"")) {
+            if (header.type != AutomatonType.ENFA) 
+                throw new IllegalStateException("Only automata of type enfa can contain epsilon trainsitions!");
+
             symbol = Symbol.EPSILON;
             hasEpsilons = true;
         }
-        
         startState.get().addTransition(new Symbol(String.valueOf(symbol)), finalState.get());
     }
 
@@ -203,13 +206,13 @@ public class Loader {
                 if (i > 0 && (i - 1) < header.stateCount) {
                     String stateName = parseState(line, i);
                     stateNames.add(stateName);
-                    states.add(new State(stateName, Arrays.asList(header.alphabet.split("")), false));
+                    states.add(new State(stateName, Arrays.asList(header.alphabet.split("")), header.type == AutomatonType.ENFA));
                 }
                 if (error) return null;
 
                 // parse the transitions
                 if (i > header.stateCount && (i - 1 - header.stateCount) < header.transitionCount) {
-                    parseTransition(line, i, stateNames, states, header.alphabet);
+                    parseTransition(line, i, stateNames, states, header);
                 }
                 if (error) return null;
 
@@ -229,15 +232,30 @@ public class Loader {
                 }
             }
 
-            // if the loaded automaton is a DFA or NFA -> check, that there aren't any epsilon transitions
-            if (hasEpsilons && header.type != AutomatonType.ENFA) {
-                throw new IllegalStateException("Automaton that isn't a ENFA can't contain epislon transitions!");
-            }
             
-            List<State> initialStates = header.initialStates.stream().map(idx -> states.get(idx)).collect(Collectors.toList());
-            List<State> finalStates   = header.finalStates.stream().map(idx -> states.get(idx)).collect(Collectors.toList());
+            List<State> initialStates = new ArrayList<>();
+            for (Integer idx: header.initialStates) {
+                try {
+                    initialStates.add(states.get(idx));
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.printf("Initial State at index %d is out of bounds of [0, %d]!\n", idx, states.size() - 1);
+                }
+            }
 
-            return new DFA(states, initialStates, finalStates, Arrays.asList(header.alphabet.split("")));
+            List<State> finalStates = new ArrayList<>();
+            for (Integer idx: header.finalStates) {
+                try {
+                    finalStates.add(states.get(idx));
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.printf("Initial State at index %d is out of bounds of [0, %d]!\n", idx, states.size() - 1);
+                }
+            }
+
+            switch (header.type) {
+                case DFA:  return new DFA(states, initialStates, finalStates, Arrays.asList(header.alphabet.split("")));
+                case NFA:  return new NFA(states, initialStates, finalStates, Arrays.asList(header.alphabet.split("")));
+                case ENFA: return new ENFA(states, initialStates, finalStates, Arrays.asList(header.alphabet.split("")), hasEpsilons);
+            }
         } catch (IOException e) {
             System.err.println("Error while reading!");
         }

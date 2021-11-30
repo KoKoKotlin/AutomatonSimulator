@@ -87,28 +87,12 @@ public class NFA extends AutomatonBase {
         return new ENFA(states, initialStates, finalStates, alphabet, false);
     }
 
-    public List<State> getInitialStates() {
-        return initialStates;
-    }
-
     public int getStateCount() {
         return states.size();
     }
 
-    public List<String> getAlphabet() {
-        return alphabet;
-    }
-
     public int getStateIndex(State state) {
         return states.indexOf(state);
-    }
-
-    public List<State> getFinalStates() {
-        return List.of(states.get(states.size() - 1));
-    }
-
-    public List<State> getStates() {
-        return states;
     }
 
     public List<Integer> getInitialStatesIdx() {

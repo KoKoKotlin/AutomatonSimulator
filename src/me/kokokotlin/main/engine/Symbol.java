@@ -73,6 +73,10 @@ public class Symbol {
     }
 
     public String dotRepr() {
-        return (symbol == null) ? "." : symbol;
+        switch (symbol) {
+            case null: return ".";
+            case "\0": return "ε";
+            default: return symbol;
+        }
     }
 }

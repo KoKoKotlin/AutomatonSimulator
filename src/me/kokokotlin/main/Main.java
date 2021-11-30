@@ -142,7 +142,7 @@ If both are provided the program will load from file. The regex will then be not
         if (automaton == null) return;
 
         if (dotFile) {
-            DotEncoder.automatonToDotfile(automaton, Paths.get("res/automaton.dot"));
+            DotEncoder.automatonToDotfile(automaton, dotPath);
             return;
         }
 

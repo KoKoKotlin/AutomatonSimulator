@@ -55,7 +55,7 @@ public class State {
             Symbol c = entry.getKey();
             List<State> val = entry.getValue();
 
-            return String.format("%c ↦ { %s }", c, val.stream().map(s -> s.name).collect(Collectors.joining(", ")));
+            return String.format("%s ↦ { %s }", c, val.stream().map(s -> s.name).collect(Collectors.joining(", ")));
         }).collect(Collectors.joining(", "));
     }
 

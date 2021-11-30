@@ -25,7 +25,7 @@ public abstract class AutomatonBase {
         StringBuilder repr = new StringBuilder();
         
         repr.append("digraph {\n\trankdir=LR\n");        
-        writeInitialAndFinalStates(repr, this.getInitialStates(), this.getFinalStates());
+        writeInitialAndFinalStates(repr, getInitialStates(), getFinalStates());
         writeTransitions(repr, this.getStates());
         repr.append("}\n");
 
